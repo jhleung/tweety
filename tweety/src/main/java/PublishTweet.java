@@ -5,6 +5,8 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
+
+import java.io.InputStream;
 import java.util.logging.Logger;
 
 import java.io.IOException;
@@ -30,28 +32,33 @@ public class PublishTweet {
             Twitter twitter = factory.getInstance();
             try {
                 twitter.updateStatus(status);
+                logger.info("Success! Status published with message: " + status);
             } catch (TwitterException e) {
                 logger.severe(e.getMessage());
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.severe(e.getMessage());
         }
     }
 
     public static Configuration getConfiguration() throws IOException {
         Properties prop = new Properties();
-        prop.load(PublishTweet.class.getResourceAsStream("resources/config.properties"));
-        String consumerKey = prop.getProperty("consumer.key");
-        String consumerSecret = prop.getProperty("consumer.secret");
-        String accessToken = prop.getProperty("access.token");
-        String accessTokenSecret = prop.getProperty("access.token.secret");
+        try (InputStream in = PublishTweet.class.getResourceAsStream("/config.properties")) {
+            prop.load(in);
+            String consumerKey = prop.getProperty("consumer.key");
+            String consumerSecret = prop.getProperty("consumer.secret");
+            String accessToken = prop.getProperty("access.token");
+            String accessTokenSecret = prop.getProperty("access.token.secret");
 
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setOAuthConsumerKey(consumerKey)
-                .setOAuthConsumerSecret(consumerSecret)
-                .setOAuthAccessToken(accessToken)
-                .setOAuthAccessTokenSecret(accessTokenSecret);
-        return cb.build();
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.setOAuthConsumerKey(consumerKey)
+                    .setOAuthConsumerSecret(consumerSecret)
+                    .setOAuthAccessToken(accessToken)
+                    .setOAuthAccessTokenSecret(accessTokenSecret);
+            return cb.build();
+        } catch (IOException e) {
+            throw new IOException();
+        }
     }
 
 }
