@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PublishTweet {
+    private static final int MAX_TWEET_LENGTH = 280;
+
     private static final Logger logger = Logger.getLogger(PublishTweet.class.getName());
 
     public static void main(String[] args) {
@@ -22,7 +24,14 @@ public class PublishTweet {
         } else if (args.length > 1) {
             logger.warning("Only one tweet may be published at a time. Proceeding to publish the first tweet given.");
         }
-        publish(args[0]);
+        String status = args[0];
+
+        if (!validateLength(status)) {
+            logger.severe("Tweet may not exceed " + MAX_TWEET_LENGTH + " characters");
+            return;
+        }
+
+        publish(status);
     }
 
     public static void publish(String status) {
@@ -59,6 +68,10 @@ public class PublishTweet {
         } catch (IOException e) {
             throw new IOException();
         }
+    }
+
+    public static boolean validateLength(String status) {
+        return status.length() <= MAX_TWEET_LENGTH;
     }
 
 }
