@@ -15,45 +15,43 @@ public class PublishTweet {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            throw new IllegalArgumentException("No tweet was given to publish.");
+            logger.severe("No tweet was given to publish.");
+            return;
         } else if (args.length > 1) {
-            // TOOD: process first tweet or throw exception
-            throw new IllegalArgumentException("Only one tweet may be published at a time.");
+            logger.warning("Only one tweet may be published at a time. Proceeding to publish the first tweet given.");
         }
-        String status = args[0];
-        publish(status);
+        publish(args[0]);
     }
 
     public static void publish(String status) {
-        Configuration conf = getConfiguration();
-        TwitterFactory factory = new TwitterFactory(conf);
-        Twitter twitter = factory.getInstance();
         try {
-            twitter.updateStatus(status);
-        } catch (TwitterException e) {
-
+            Configuration conf = getConfiguration();
+            TwitterFactory factory = new TwitterFactory(conf);
+            Twitter twitter = factory.getInstance();
+            try {
+                twitter.updateStatus(status);
+            } catch (TwitterException e) {
+                logger.severe(e.getMessage());
+            }
+        } catch(IOException e) {
+            logger.severe(e.getMessage());
         }
     }
 
-    public static Configuration getConfiguration() {
+    public static Configuration getConfiguration() throws IOException {
         Properties prop = new Properties();
-        try {
-            prop.load(PublishTweet.class.getResourceAsStream("resources/config.properties"));
-            String consumerKey = prop.getProperty("consumer.key");
-            String consumerSecret = prop.getProperty("consumer.secret");
-            String accessToken = prop.getProperty("access.token");
-            String accessTokenSecret = prop.getProperty("access.token.secret");
+        prop.load(PublishTweet.class.getResourceAsStream("resources/config.properties"));
+        String consumerKey = prop.getProperty("consumer.key");
+        String consumerSecret = prop.getProperty("consumer.secret");
+        String accessToken = prop.getProperty("access.token");
+        String accessTokenSecret = prop.getProperty("access.token.secret");
 
-            ConfigurationBuilder cb = new ConfigurationBuilder();
-            cb.setOAuthConsumerKey(consumerKey)
-                    .setOAuthConsumerSecret(consumerSecret)
-                    .setOAuthAccessToken(accessToken)
-                    .setOAuthAccessTokenSecret(accessTokenSecret);
-            return cb.build();
-        } catch (IOException e) {
-            return null;
-        }
-
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setOAuthConsumerKey(consumerKey)
+                .setOAuthConsumerSecret(consumerSecret)
+                .setOAuthAccessToken(accessToken)
+                .setOAuthAccessTokenSecret(accessTokenSecret);
+        return cb.build();
     }
 
 }
