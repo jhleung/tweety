@@ -1,7 +1,4 @@
 To run this project:
-
-Publish Tweet:
-
 Run the following:
 cd ~/Downloads/
 git clone https://github.com/Twitter4J/Twitter4J
@@ -10,21 +7,13 @@ cd tweety
 Modify config.properties to add your consumer key/secret and access token/secret
 	vim tweety/src/main/resources/config.properties
 Modify <user_name> to your username and run below command
-	javac -cp ./src/main/:/Users/<user_name>/Downloads/twitter4j-4.0.7/lib/twitter4j-core-4.0.7.jar ./src/main/java/PublishTweet.java
+	javac -cp ./src/main/:/Users/<user_name>/Downloads/twitter4j-4.0.7/lib/twitter4j-core-4.0.7.jar ./src/main/java/*.java
 Modify Class-Path variable in Manifest.txt
 	change <user_name> to your username in Users/<user_name>/Downloads/twitter4j-4.0.7/lib/twitter4j-core-4.0.7.jar
-jar cfm publishTweet.jar Manifest.txt src/main/java/PublishTweet.class
-java -jar publishTweet.jar "<your_tweet>"
+jar cfm tweety.jar Manifest.txt src/main/java/Tweety.class
+
+Publish Tweet:
+java -jar tweety.jar "<your_tweet>"
 
 Pull Tweet:
-
-Run the following:
-cd ~/Downloads/tweety
-Modify config.properties to add your consumer key/secret and access token/secret
-        vim tweety/src/main/resources/config.properties
-Modify <user_name> to your username and run below command
-        javac -cp ./src/main/:/Users/<user_name>/Downloads/twitter4j-4.0.7/lib/twitter4j-core-4.0.7.jar ./src/main/java/PullTweets.java
-Modify Class-Path variable in Manifest.txt
-        change <user_name> to your username in Users/<user_name>/Downloads/twitter4j-4.0.7/lib/twitter4j-core-4.0.7.jar
-jar cfm pullTweets.jar Manifest.txt src/main/java/PullTweets.class
-java -jar pullTweets.jar "<your_tweet>"
+java -jar tweety.jar 

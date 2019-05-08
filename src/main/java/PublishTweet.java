@@ -12,24 +12,11 @@ public class PublishTweet {
 
     private static final Logger logger = Logger.getLogger(PublishTweet.class.getName());
 
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            logger.severe("No tweet was given to publish.");
-            return;
-        } else if (args.length > 1) {
-            logger.warning("Only one tweet may be published at a time. Proceeding to publish the first tweet given.");
-        }
-        String status = args[0];
-
+    public static void publish(String status) {
         if (!validateLength(status)) {
             logger.severe("Tweet may not exceed " + MAX_TWEET_LENGTH + " characters");
             return;
         }
-
-        publish(status);
-    }
-
-    public static void publish(String status) {
         try {
             Configuration conf = TwitterHelper.getConfiguration();
             TwitterFactory factory = new TwitterFactory(conf);
@@ -45,7 +32,7 @@ public class PublishTweet {
         }
     }
 
-    public static boolean validateLength(String status) {
+    private static boolean validateLength(String status) {
         return status.length() <= MAX_TWEET_LENGTH;
     }
 

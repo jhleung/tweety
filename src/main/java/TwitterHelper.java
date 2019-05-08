@@ -8,7 +8,7 @@ import java.util.Properties;
 public class TwitterHelper {
     public static Configuration getConfiguration() throws IOException {
         Properties prop = new Properties();
-        try (InputStream in = PublishTweet.class.getResourceAsStream("/config.properties")) {
+        try (InputStream in = TwitterHelper.class.getResourceAsStream("/config.properties")) {
             prop.load(in);
             String consumerKey = prop.getProperty("consumer.key");
             String consumerSecret = prop.getProperty("consumer.secret");

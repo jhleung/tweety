@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class PullTweets {
-    private static final Logger logger = Logger.getLogger(PublishTweet.class.getName());
-
-    public static void main(String[] args) {
-        pullHomeTimeline();
-    }
+    private static final Logger logger = Logger.getLogger(PullTweets.class.getName());
 
     public static void pullHomeTimeline() {
         try {
