@@ -1,11 +1,9 @@
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
-import twitter4j.conf.Configuration;
 
 import java.util.logging.Logger;
 
-import java.io.IOException;
 
 public class PublishTweet {
     private static final int MAX_TWEET_LENGTH = 280;
@@ -17,17 +15,12 @@ public class PublishTweet {
             logger.severe("Tweet may not exceed " + MAX_TWEET_LENGTH + " characters");
             return;
         }
+        TwitterFactory factory = new TwitterFactory();
+        Twitter twitter = factory.getInstance();
         try {
-            Configuration conf = TwitterHelper.getConfiguration();
-            TwitterFactory factory = new TwitterFactory(conf);
-            Twitter twitter = factory.getInstance();
-            try {
-                twitter.updateStatus(status);
-                logger.info("Success! Status published with message: " + status);
-            } catch (TwitterException e) {
-                logger.severe(e.getMessage());
-            }
-        } catch (IOException e) {
+            twitter.updateStatus(status);
+            logger.info("Success! Status published with message: " + status);
+        } catch (TwitterException e) {
             logger.severe(e.getMessage());
         }
     }
