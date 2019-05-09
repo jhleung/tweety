@@ -1,6 +1,7 @@
 *.iml
+/target
 .properties
-.idea/
+.idea
 /out
 *.jar
 *.class
