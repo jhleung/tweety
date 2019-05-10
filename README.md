@@ -9,20 +9,21 @@ Run the following:
 3. Create a twitter4j.properties under src/main/resources with the following and replace with your own consumer key/secret and access token
 ```
         debug=true
-        auth.consumerKey=***********************
+        oauth.consumerKey=***********************
         oauth.consumerSecret=******************************************
         oauth.accessToken=**************************************************
         oauth.accessTokenSecret=******************************************
 ```
 
-4. ```javac -cp ./src/main/:lib/twitter4j-core-4.0.7.jar ./src/main/java/*.java```
+4. Install maven or check that you have it installed
+	mvn -v
 
-5. ```jar cfm tweety.jar Manifest.txt src/main/java/Tweety.class```
+5. ```mvn clean compile assembly:single``` 
 
 Publish Tweet:
 
-    java -jar tweety.jar "<your_tweet>"
+	java -jar target/tweety-1.0-SNAPSHOT-jar-with-dependencies.jar "<your_tweet>"
 
 Pull Tweet:
 
-    java -jar tweety.jar
+	java -jar target/tweety-1.0-SNAPSHOT-jar-with-dependencies.jar
