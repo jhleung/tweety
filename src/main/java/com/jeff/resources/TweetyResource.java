@@ -35,12 +35,12 @@ public class TweetyResource {
                 rb.entity(status);
             } catch (TwitterException e) {
                 rb.status( Response.Status.INTERNAL_SERVER_ERROR);
-                if (isUnAuthorized(e.getStatusCode())) {
-                    rb.entity("Internal Server Error. Please contact System Administrator.");
-                } else if (tweet.isEmpty()) {
+                if (tweet.isEmpty()) {
                     rb.entity("Please enter a non-empty status");
+                } else if (e.getErrorMessage().equals("Status is a duplicate.")) {
+                    rb.entity("Status was already posted. Please try again.");
                 } else {
-                    rb.entity(e.getErrorMessage());
+                    rb.entity("Internal Server Error. Please contact System Administrator.");
                 }
             }
         }
@@ -60,18 +60,10 @@ public class TweetyResource {
             rb.entity(statuses);
        } catch (TwitterException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            if (isUnAuthorized(e.getStatusCode())) {
-                rb.entity("Internal Server Error. Please contact System Administrator.");
-            } else {
-                rb.entity(e.getErrorMessage());
-            }
+            rb.entity("Internal Server Error. Please contact System Administrator.");
         }
 
         return rb.build();
-    }
-
-    private boolean isUnAuthorized(int errorCode) {
-        return errorCode == Response.Status.UNAUTHORIZED.getStatusCode();
     }
 
     private boolean validateLength(String status) {
