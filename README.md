@@ -24,9 +24,9 @@ Run the following:
 
 Publish Tweet:
 
-	curl -X POST http://localhost:8080/api/1.0/twitter/tweet -d "<your_tweet>"
+	curl -d "tweet=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet"
 
 Pull Tweet:
 	
-	curl -X GET http://localhost:8080/api/1.0/twitter/timeline
+	curl http://localhost:8080/api/1.0/twitter/timeline
 

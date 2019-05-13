@@ -4,10 +4,7 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -25,7 +22,7 @@ public class TweetyResource {
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/tweet")
-    public Response publishTweet(String tweet) {
+    public Response publishTweet(@FormParam("tweet") String tweet) {
         Response.Status responseStatus = Response.Status.OK;
         Response.ResponseBuilder rb = Response.status(responseStatus);
 
@@ -38,7 +35,7 @@ public class TweetyResource {
                 rb.entity(status);
             } catch (TwitterException e) {
                 rb.status( Response.Status.INTERNAL_SERVER_ERROR);
-                if (!isAuthorized(e.getStatusCode())) {
+                if (!isUnAuthorized(e.getStatusCode())) {
                     rb.entity(e.getErrorMessage());
                 }
             }
@@ -59,7 +56,7 @@ public class TweetyResource {
             rb.entity(statuses);
        } catch (TwitterException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            if (!isAuthorized(e.getStatusCode())) {
+            if (!isUnAuthorized(e.getStatusCode())) {
                 rb.entity(e.getErrorMessage());
             }
         }
@@ -67,7 +64,7 @@ public class TweetyResource {
         return rb.build();
     }
 
-    private boolean isAuthorized(int errorCode) {
+    private boolean isUnAuthorized(int errorCode) {
         return errorCode == Response.Status.UNAUTHORIZED.getStatusCode();
     }
 
