@@ -35,8 +35,10 @@ public class TweetyResource {
                 rb.entity(status);
             } catch (TwitterException e) {
                 rb.status( Response.Status.INTERNAL_SERVER_ERROR);
-                if (!isUnAuthorized(e.getStatusCode())) {
+                if (isUnAuthorized(e.getStatusCode())) {
                     rb.entity(e.getErrorMessage());
+                } else {
+                    rb.entity("Internal Server Error");
                 }
             }
         }
@@ -56,7 +58,9 @@ public class TweetyResource {
             rb.entity(statuses);
        } catch (TwitterException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            if (!isUnAuthorized(e.getStatusCode())) {
+            if (isUnAuthorized(e.getStatusCode())) {
+                rb.entity("Internal Server Error");
+            } else {
                 rb.entity(e.getErrorMessage());
             }
         }
