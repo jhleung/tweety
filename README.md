@@ -18,12 +18,15 @@ Run the following:
 4. Install maven or check that you have it installed
 	mvn -v
 
-5. ```mvn clean compile assembly:single``` 
+5. ```mvn package``` 
+
+6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server```
 
 Publish Tweet:
 
-	java -jar target/tweety-1.0-SNAPSHOT-jar-with-dependencies.jar "<your_tweet>"
+	curl -d "tweet=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet"
 
 Pull Tweet:
+	
+	curl http://localhost:8080/api/1.0/twitter/timeline
 
-	java -jar target/tweety-1.0-SNAPSHOT-jar-with-dependencies.jar
