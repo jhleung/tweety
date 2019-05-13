@@ -22,7 +22,7 @@ public class TweetyResource {
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/tweet")
-    public Response publishTweet(@FormParam("tweet") String tweet) {
+    public Response publishTweet(@FormParam("message") String tweet) {
         Response.Status responseStatus = Response.Status.OK;
         Response.ResponseBuilder rb = Response.status(responseStatus);
 
@@ -36,9 +36,11 @@ public class TweetyResource {
             } catch (TwitterException e) {
                 rb.status( Response.Status.INTERNAL_SERVER_ERROR);
                 if (isUnAuthorized(e.getStatusCode())) {
-                    rb.entity(e.getErrorMessage());
+                    rb.entity("Internal Server Error. Please contact System Administrator.");
+                } else if (tweet.isEmpty()) {
+                    rb.entity("Please enter a non-empty status");
                 } else {
-                    rb.entity("Internal Server Error");
+                    rb.entity(e.getErrorMessage());
                 }
             }
         }
@@ -59,7 +61,7 @@ public class TweetyResource {
        } catch (TwitterException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             if (isUnAuthorized(e.getStatusCode())) {
-                rb.entity("Internal Server Error");
+                rb.entity("Internal Server Error. Please contact System Administrator.");
             } else {
                 rb.entity(e.getErrorMessage());
             }
