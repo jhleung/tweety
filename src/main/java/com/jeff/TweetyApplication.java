@@ -7,11 +7,7 @@ import io.dropwizard.setup.Environment;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 
-import java.util.logging.Logger;
-
 public class TweetyApplication extends Application<Configuration> {
-    private static final Logger logger = Logger.getLogger(TweetyApplication.class.getName());
-
     public static void main(String [] args) throws Exception{
        new TweetyApplication().run(args);
     }

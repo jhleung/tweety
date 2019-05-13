@@ -7,6 +7,8 @@ import twitter4j.TwitterException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -21,46 +23,48 @@ public class TweetyResource {
     }
 
     @POST
+    @Produces({ MediaType.APPLICATION_JSON })
     @Path("/tweet")
     public Response publishTweet(String tweet) {
         Response.Status responseStatus = Response.Status.OK;
-        String responseMsg = "";
-        validateLength(tweet);
-        try {
-            twitter.updateStatus(tweet);
-        } catch (TwitterException e){
-            if (!isAuthorized(e.getErrorCode())) {
-                responseMsg = e.getErrorMessage();
+        Response.ResponseBuilder rb = Response.status(responseStatus);
+
+        if (!validateLength(tweet)) {
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
+            rb.entity("Tweet must be a maximum of 280 characters");
+        } else {
+            try {
+                Status status = twitter.updateStatus(tweet);
+                rb.entity(status);
+            } catch (TwitterException e) {
+                rb.status( Response.Status.INTERNAL_SERVER_ERROR);
+                if (!isAuthorized(e.getStatusCode())) {
+                    rb.entity(e.getErrorMessage());
+                }
             }
-            responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
         }
-        return Response
-                .status(responseStatus)
-                .entity(responseMsg)
-                .build();
+
+        return rb.build();
     }
 
     @GET
+    @Produces({ MediaType.APPLICATION_JSON })
     @Path("/timeline")
     public Response pullTweets() {
-        System.out.println("test");
         Response.Status responseStatus = Response.Status.OK;
-        String responseMsg = "";
+        Response.ResponseBuilder rb = Response.status(responseStatus);
+
         try {
-           List<Status> statuses = twitter.getHomeTimeline();
-           StringBuilder sb = new StringBuilder();
-           statuses.forEach((val) -> sb.append("@" + val.getUser().getScreenName() + " - " + val.getText() + "\n"));
-           responseMsg = sb.toString();
+            List<Status> statuses = twitter.getHomeTimeline();
+            rb.entity(statuses);
        } catch (TwitterException e) {
-            if (!isAuthorized(e.getErrorCode())) {
-                responseMsg = e.getErrorMessage();
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
+            if (!isAuthorized(e.getStatusCode())) {
+                rb.entity(e.getErrorMessage());
             }
-           responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
         }
-        return Response
-                .status(responseStatus)
-                .entity(responseMsg)
-                .build();
+
+        return rb.build();
     }
 
     private boolean isAuthorized(int errorCode) {
