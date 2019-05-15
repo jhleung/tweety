@@ -6,9 +6,9 @@ Run the following:
     
 2. ```cd tweety```
     
-3. Create a twitter4j.properties under src/main/resources with the following and replace with your own consumer key/secret and access token
+3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key/secret and access token
 ```
-        debug=true
+        debug=****
         oauth.consumerKey=***********************
         oauth.consumerSecret=******************************************
         oauth.accessToken=**************************************************

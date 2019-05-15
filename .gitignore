@@ -6,3 +6,4 @@
 *.jar
 *.class
 .DS_Store
+config.yml
