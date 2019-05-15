@@ -7,7 +7,11 @@ import com.jeff.resources.TweetyResource;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.junit.ClassRule;
 import org.junit.Test;
-import twitter4j.*;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterObjectFactory;
+import twitter4j.ResponseList;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
@@ -15,11 +19,14 @@ import javax.ws.rs.core.Response;
 
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class TweetyResourceTest {
@@ -29,6 +36,14 @@ public class TweetyResourceTest {
     public static final ResourceTestRule resources = ResourceTestRule.builder()
             .addResource(new TweetyResource(twitter))
             .build();
+
+    public static final String INTERNAL_SERVER_ERROR_MSG = "Internal Server Error. Please contact System Administrator.";
+    public static final String DUPLICATE_STATUS_ERROR_MSG = "Status was already posted. Please try again.";
+    public static final String EMPTY_STATUS_ERROR_MSG = "Please enter a non-empty status";
+    public static final String EXCEED_MAX_LENGTH_ERROR_MSG = "Tweet must be a maximum of 280 characters";
+    
+    public static final String PUBLISH_TWEET_ENDPOINT = "/api/1.0/twitter/tweet";
+    public static final String PULL_TWEETS_ENDPOINT = "/api/1.0/twitter/timeline";
 
     @Test
     public void testPullTimelineSuccess() throws IOException, TwitterException {
@@ -41,7 +56,7 @@ public class TweetyResourceTest {
         responseList.add(st3);
 
         when(twitter.getHomeTimeline()).thenReturn(responseList);
-        Response response = resources.target("/api/1.0/twitter/timeline").request().get();
+        Response response = resources.target(PULL_TWEETS_ENDPOINT).request().get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         List<String> splittedJsonElements = new ArrayList<String>();
@@ -64,13 +79,11 @@ public class TweetyResourceTest {
 
     @Test
     public void testPullTimelineFailure() throws TwitterException {
-        assertEquals(Response.Status.OK.getStatusCode(), resources.target("/api/1.0/twitter/timeline").request().get().getStatus());
         TwitterException twitterException = mock(TwitterException.class);
-
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
-        Response response = resources.target("/api/1.0/twitter/timeline").request().get();
+        Response response = resources.target(PULL_TWEETS_ENDPOINT).request().get();
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("Internal Server Error. Please contact System Administrator.", response.readEntity(String.class));
+        assertEquals(INTERNAL_SERVER_ERROR_MSG, response.readEntity(String.class));
     }
 
     @Test
@@ -86,7 +99,7 @@ public class TweetyResourceTest {
                     TwitterObjectFactory.createStatus(
                             "{\"text\":\"" + message + "\"}"
                     ));
-        Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
+        Response response = resources.target(PUBLISH_TWEET_ENDPOINT).request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         assertTrue(messageJsonString.contains("\"text\":\"" + message +  "\""));
@@ -94,9 +107,9 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishTweetExceedMaxLength() throws TwitterException {
-        String message = "thistweetissoincrediblylongthatitexceedsthemaximumlengthoftwohundredandeightyallowedcharactersforasinglegiventweet" +
-                         "infactwerenotevenhalfwaythroughatthispointsojustimaginethatandnowweretomakethistweetevenlongerwhichisjustincrediblereally" +
-                         "likehonestlyfantasticokaythatsmorethantwohundredandeightcharactersimgoingtoshutup";
+        StringBuilder sb = new StringBuilder("");
+        IntStream.range(0, 281).forEach(i -> sb.append("x"));
+        String message = sb.toString();
         Form formData = new Form();
         formData.param("message", message);
 
@@ -105,12 +118,11 @@ public class TweetyResourceTest {
                         TwitterObjectFactory.createStatus(
                                 "{\"text\":\"" + message + "\"}"
                         ));
-        Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
+        Response response = resources.target(PUBLISH_TWEET_ENDPOINT).request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("Tweet must be a maximum of 280 characters", messageJsonString);
+        assertEquals(EXCEED_MAX_LENGTH_ERROR_MSG, messageJsonString);
     }
-
 
     @Test
     public void testPublishEmptyTweet() throws TwitterException {
@@ -121,10 +133,10 @@ public class TweetyResourceTest {
         TwitterException twitterException = mock(TwitterException.class);
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
-        Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
+        Response response = resources.target(PUBLISH_TWEET_ENDPOINT).request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("Please enter a non-empty status", messageJsonString);
+        assertEquals(EMPTY_STATUS_ERROR_MSG, messageJsonString);
     }
 
     @Test
@@ -137,10 +149,10 @@ public class TweetyResourceTest {
         when(twitterException.getErrorMessage()).thenReturn("Status is a duplicate.");
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
-        Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
+        Response response = resources.target(PUBLISH_TWEET_ENDPOINT).request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("Status was already posted. Please try again.", messageJsonString);
+        assertEquals(DUPLICATE_STATUS_ERROR_MSG, messageJsonString);
     }
 
     @Test
@@ -153,74 +165,9 @@ public class TweetyResourceTest {
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
-        Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
+        Response response = resources.target(PUBLISH_TWEET_ENDPOINT).request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        assertEquals("Internal Server Error. Please contact System Administrator.", messageJsonString);
-    }
-
-    private class MyResponseList<T> implements ResponseList<T> {
-        private List<T> list = new ArrayList<>();
-
-        @Override
-        public boolean add(T t) {
-            list.add(t);
-            return true;
-        }
-        @Override
-        public T get(int index) {
-            return list.get(index);
-        }
-        @Override
-        public Iterator<T> iterator() {
-            return list.iterator();
-        }
-        @Override
-        public int size() {
-            return list.size();
-        }
-
-        @Override
-        public RateLimitStatus getRateLimitStatus() { return null; }
-        @Override
-        public int getAccessLevel() { return 0; }
-        @Override
-        public boolean isEmpty() { return false; }
-        @Override
-        public boolean contains(Object o) { return false; }
-        @Override
-        public Object[] toArray() { return new Object[0]; }
-        @Override
-        public <T1> T1[] toArray(T1[] a) { return null; }
-        @Override
-        public boolean remove(Object o) { return false; }
-        @Override
-        public boolean containsAll(Collection<?> c) { return false; }
-        @Override
-        public boolean addAll(Collection<? extends T> c) { return false; }
-        @Override
-        public boolean addAll(int index, Collection<? extends T> c) { return false; }
-        @Override
-        public boolean removeAll(Collection<?> c) {  return false; }
-        @Override
-        public boolean retainAll(Collection<?> c) { return false; }
-        @Override
-        public void clear() { }
-        @Override
-        public T set(int index, T element) { return null; }
-        @Override
-        public void add(int index, T element) { }
-        @Override
-        public T remove(int index) { return null; }
-        @Override
-        public int indexOf(Object o) { return 0;  }
-        @Override
-        public int lastIndexOf(Object o) { return 0; }
-        @Override
-        public ListIterator<T> listIterator() { return null; }
-        @Override
-        public ListIterator<T> listIterator(int index) { return null; }
-        @Override
-        public List<T> subList(int fromIndex, int toIndex) { return null; }
+        assertEquals(INTERNAL_SERVER_ERROR_MSG, messageJsonString);
     }
 }
