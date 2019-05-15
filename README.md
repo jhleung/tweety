@@ -6,7 +6,7 @@ Run the following:
     
 2. ```cd tweety```
     
-3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key/secret and access token
+3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key & secret and access token & access token secret. For the debug field, valid values are true or false.
 
 4. Install maven or check that you have it installed
 	mvn -v

@@ -1,5 +1,6 @@
-debug: ***** 
-oauthConsumerKey: ********************** 
-oauthConsumerSecret: ********************************* 
-oauthAccessToken: **************************** 
-oauthAccessTokenSecret: *********************** 
+twitter4j:
+  debug: *****
+  oauthConsumerKey: **********************
+  oauthConsumerSecret: *********************************
+  oauthAccessToken: ****************************
+  oauthAccessTokenSecret: ***********************
