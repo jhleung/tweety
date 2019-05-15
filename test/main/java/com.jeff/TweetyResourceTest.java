@@ -107,7 +107,6 @@ public class TweetyResourceTest {
                         ));
         Response response = resources.target("/api/1.0/twitter/tweet").request().post(Entity.form(formData));
         String messageJsonString = response.readEntity(String.class);
-        System.out.println(messageJsonString);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         assertEquals("Tweet must be a maximum of 280 characters", messageJsonString);
     }
