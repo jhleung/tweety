@@ -1,5 +1,6 @@
 package com.jeff.resources;
 
+import com.jeff.TweetyConstantsRepository;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -11,7 +12,6 @@ import java.util.List;
 
 @Path("/api/1.0/twitter")
 public class TweetyResource {
-    private static final int MAX_TWEET_LENGTH = 280;
 
     private final Twitter twitter;
 
@@ -28,7 +28,7 @@ public class TweetyResource {
 
         if (!validateLength(tweet)) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity("Tweet must be a maximum of 280 characters");
+            rb.entity(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
         } else {
             try {
                 Status status = twitter.updateStatus(tweet);
@@ -36,11 +36,11 @@ public class TweetyResource {
             } catch (TwitterException e) {
                 rb.status( Response.Status.INTERNAL_SERVER_ERROR);
                 if (tweet.isEmpty()) {
-                    rb.entity("Please enter a non-empty status");
+                    rb.entity(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
                 } else if (e.getErrorMessage().equals("Status is a duplicate.")) {
-                    rb.entity("Status was already posted. Please try again.");
+                    rb.entity(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
                 } else {
-                    rb.entity("Internal Server Error. Please contact System Administrator.");
+                    rb.entity(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
                 }
             }
         }
@@ -60,13 +60,13 @@ public class TweetyResource {
             rb.entity(statuses);
        } catch (TwitterException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity("Internal Server Error. Please contact System Administrator.");
+            rb.entity(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
 
         return rb.build();
     }
 
     private boolean validateLength(String status) {
-        return status.length() <= MAX_TWEET_LENGTH;
+        return status.length() <= TweetyConstantsRepository.MAX_TWEET_LENGTH;
     }
 }
