@@ -7,20 +7,13 @@ Run the following:
 2. ```cd tweety```
     
 3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key/secret and access token
-```
-        debug=****
-        oauth.consumerKey=***********************
-        oauth.consumerSecret=******************************************
-        oauth.accessToken=**************************************************
-        oauth.accessTokenSecret=******************************************
-```
 
 4. Install maven or check that you have it installed
 	mvn -v
 
 5. ```mvn package``` 
 
-6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server```
+6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server config.yml```
 
 Publish Tweet:
 
