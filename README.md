@@ -30,3 +30,6 @@ Pull Tweet:
 	
 	curl http://localhost:8080/api/1.0/twitter/timeline
 
+Coverage:
+	run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
+
