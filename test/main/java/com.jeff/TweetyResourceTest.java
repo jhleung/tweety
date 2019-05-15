@@ -10,7 +10,6 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterObjectFactory;
 import twitter4j.ResponseList;
 
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
 
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -63,10 +61,8 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishTweetSuccess() throws TwitterException, IOException {
+    public void testPublishTweetSuccess() throws TwitterException {
         String message = "value12";
-        Form formData = new Form();
-        formData.param("message", message);
 
         Status st = mock(Status.class);
         when(st.getText()).thenReturn(message);
@@ -85,8 +81,6 @@ public class TweetyResourceTest {
         StringBuilder sb = new StringBuilder("");
         IntStream.range(0, TweetyConstantsRepository.MAX_TWEET_LENGTH + 1).forEach(i -> sb.append("x"));
         String message = sb.toString();
-        Form formData = new Form();
-        formData.param("message", message);
 
         when(twitter.updateStatus(message))
                 .thenReturn(
@@ -101,9 +95,6 @@ public class TweetyResourceTest {
     @Test
     public void testPublishEmptyTweet() throws TwitterException {
         String message = "";
-        Form formData = new Form();
-        formData.param("message", message);
-
         TwitterException twitterException = mock(TwitterException.class);
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
@@ -115,9 +106,6 @@ public class TweetyResourceTest {
     @Test
     public void testPublishDuplicateTweet() throws TwitterException{
         String message = "duplicateStatus";
-        Form formData = new Form();
-        formData.param("message", message);
-
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Status is a duplicate.");
         when(twitter.updateStatus(message)).thenThrow(twitterException);
@@ -130,9 +118,6 @@ public class TweetyResourceTest {
     @Test
     public void testPublishTweetGenericException() throws TwitterException{
         String message = "message";
-        Form formData = new Form();
-        formData.param("message", message);
-
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
         when(twitter.updateStatus(message)).thenThrow(twitterException);
