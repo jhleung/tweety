@@ -10,9 +10,9 @@ public class TweetyConfiguration extends Configuration {
     @Valid
     @NotNull
     @JsonProperty
-    private AuthorizationConfiguration authorization = new AuthorizationConfiguration();
+    private TwitterAuthorizationConfiguration twitterAuthorization = new TwitterAuthorizationConfiguration();
 
-    public AuthorizationConfiguration getTwitter4jAuthorizationConfiguration() {
-        return authorization;
+    public TwitterAuthorizationConfiguration getTwitter4jAuthorizationConfiguration() {
+        return twitterAuthorization;
     }
 }
