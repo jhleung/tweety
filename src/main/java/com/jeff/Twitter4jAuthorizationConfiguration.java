@@ -5,7 +5,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
 
-public class Twitter4jConfiguration {
+public class Twitter4jAuthorizationConfiguration {
     @NotNull
     private boolean debug;
     @NotEmpty

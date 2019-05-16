@@ -1,4 +1,4 @@
-twitter4j:
+twitter4jAuthorization:
   debug: *****
   oauthConsumerKey: **********************
   oauthConsumerSecret: *********************************
