@@ -16,4 +16,5 @@ public class TweetyConfiguration extends Configuration {
     public TwitterAuthorizationConfiguration getTwitter4jAuthorizationConfiguration() {
         return twitterAuthorization;
     }
+
 }

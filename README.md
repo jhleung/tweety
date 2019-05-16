@@ -1,28 +1,46 @@
-To run this project:
 
-Run the following:
-
+To run this project:  
+  
+Run the following:  
+  
 1. ```git clone https://github.com/jhleung/tweety```
-    
+  
 2. ```cd tweety```
-    
-3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key & secret and access token & access token secret. For the debug field, valid values are true or false.
-
-4. Install maven or check that you have it installed
-	mvn -v
-
-5. ```mvn clean package``` 
-
+  
+3. Copy config-example.yml into a new file called config.yml under tweety/ .
+  
+    Authorization:
+  
+      Replace the asterisks with your own consumer key & secret and access token & access token secret. For the debug field, valid values are true or false.
+  
+    Logging:
+  
+      Replace the asterisks in logging.loggers.com.level property with desired logging level.
+      It is recommended to keep the global logging.level set to OFF to turn off logs coming from other libraries (apache, jackson, etc.).
+      logging.loggers.com.level will give you the necessary logs from this application itself.
+      Valid values are TRACE, DEBUG, INFO, ERROR. This application will not produce WARN or FATAL level errors.
+  
+  
+        logging:
+            level: OFF
+            loggers:
+                com:
+                    level: ERROR
+  
+  
+4. Install maven or check that you have it installed ```mvn -v```
+  
+5. ```mvn clean package```
+  
 6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server config.yml```
-
+  
 Publish Tweet:
-
-	curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet
-
+  
+   curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet
+  
 Pull Tweet:
-	
-	curl http://localhost:8080/api/1.0/twitter/timeline
-
+  
+   curl http://localhost:8080/api/1.0/twitter/timeline
+  
 Coverage:
-	run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
-
+   run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
