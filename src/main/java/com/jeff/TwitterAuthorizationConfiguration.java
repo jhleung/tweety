@@ -61,5 +61,4 @@ public class TwitterAuthorizationConfiguration {
     public void setOAuthAccessTokenSecret(String secret) {
         oAuthAccessTokenSecret = secret;
     }
-
 }

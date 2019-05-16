@@ -11,7 +11,7 @@ Run the following:
 4. Install maven or check that you have it installed
 	mvn -v
 
-5. ```mvn package``` 
+5. ```mvn clean package``` 
 
 6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server config.yml```
 
