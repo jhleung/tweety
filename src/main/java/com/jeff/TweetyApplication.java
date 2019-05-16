@@ -14,13 +14,13 @@ public class TweetyApplication extends Application<TweetyConfiguration> {
 
     @Override
     public void run(TweetyConfiguration configuration, Environment environment) {
-        Twitter4jAuthorizationConfiguration Twitter4jAuthorizationConfiguration = configuration.getTwitter4jAuthorizationConfiguration();
+        AuthorizationConfiguration AuthorizationConfiguration = configuration.getTwitter4jAuthorizationConfiguration();
         ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(Twitter4jAuthorizationConfiguration.getDebug())
-                .setOAuthConsumerKey(Twitter4jAuthorizationConfiguration.getOAuthConsumerKey())
-                .setOAuthConsumerSecret(Twitter4jAuthorizationConfiguration.getOAuthConsumerSecret())
-                .setOAuthAccessToken(Twitter4jAuthorizationConfiguration.getOAuthAccessToken())
-                .setOAuthAccessTokenSecret(Twitter4jAuthorizationConfiguration.getOAuthAccessTokenSecret());
+        cb.setDebugEnabled(AuthorizationConfiguration.getDebug())
+                .setOAuthConsumerKey(AuthorizationConfiguration.getOAuthConsumerKey())
+                .setOAuthConsumerSecret(AuthorizationConfiguration.getOAuthConsumerSecret())
+                .setOAuthAccessToken(AuthorizationConfiguration.getOAuthAccessToken())
+                .setOAuthAccessTokenSecret(AuthorizationConfiguration.getOAuthAccessTokenSecret());
         TwitterFactory factory = new TwitterFactory();
         Twitter twitter = factory.getInstance();
         TweetyResource tweetyResource = new TweetyResource(twitter);
