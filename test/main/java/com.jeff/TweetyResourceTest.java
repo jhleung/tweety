@@ -25,9 +25,14 @@ public class TweetyResourceTest {
 
     private static final TweetyResource tweetyResource = new TweetyResource(twitter);
     @ClassRule
-    public static final ResourceTestRule resources = ResourceTestRule.builder()
+    private static final ResourceTestRule resources = ResourceTestRule.builder()
             .addResource(new TweetyResource(twitter))
             .build();
+
+    private static final int OK_STATUS_CODE = TweetyConstantsRepository.OK_STATUS.getStatusCode();
+    private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = TweetyConstantsRepository.INTERNAL_SERVER_ERROR_STATUS.getStatusCode();
+
+
 
     @Test
     public void testPullTimelineSuccess() throws TwitterException {
@@ -44,7 +49,7 @@ public class TweetyResourceTest {
         Response response = tweetyResource.pullTweets();
         List<Status> statusesResult =(List<Status>) response.getEntity();
 
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(OK_STATUS_CODE, response.getStatus());
         assertEquals(responseList.size(), statusesResult.size());
         IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
     }
@@ -54,7 +59,7 @@ public class TweetyResourceTest {
         TwitterException twitterException = mock(TwitterException.class);
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         Response response = tweetyResource.pullTweets();
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }
 
@@ -70,7 +75,7 @@ public class TweetyResourceTest {
                             "{\"text\":\"" + message + "\"}"
                     ));
         Response response = tweetyResource.publishTweet(message);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(OK_STATUS_CODE, response.getStatus());
         assertEquals(st.getText(), ((Status) response.getEntity()).getText());
     }
 
@@ -86,7 +91,7 @@ public class TweetyResourceTest {
                                 "{\"text\":\"" + message + "\"}"
                         ));
         Response response = tweetyResource.publishTweet(message);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG, response.getEntity());
     }
 
@@ -97,7 +102,7 @@ public class TweetyResourceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         Response response = tweetyResource.publishTweet(message);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, response.getEntity());
     }
 
@@ -109,7 +114,7 @@ public class TweetyResourceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         Response response = tweetyResource.publishTweet(message);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG, response.getEntity());
     }
 
@@ -121,7 +126,7 @@ public class TweetyResourceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         Response response = tweetyResource.publishTweet(message);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }
 }
