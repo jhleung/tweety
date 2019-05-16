@@ -6,25 +6,18 @@ Run the following:
     
 2. ```cd tweety```
     
-3. Create a twitter4j.properties under src/main/resources with the following and replace with your own consumer key/secret and access token
-```
-        debug=true
-        oauth.consumerKey=***********************
-        oauth.consumerSecret=******************************************
-        oauth.accessToken=**************************************************
-        oauth.accessTokenSecret=******************************************
-```
+3. Copy config-example.yml into a new file called config.yml under tweety/ . Replace the asterisks with your own consumer key & secret and access token & access token secret. For the debug field, valid values are true or false.
 
 4. Install maven or check that you have it installed
 	mvn -v
 
-5. ```mvn package``` 
+5. ```mvn clean package``` 
 
-6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server```
+6. ```java -jar target/tweety-1.0-SNAPSHOT.jar server config.yml```
 
 Publish Tweet:
 
-	curl -d "tweet=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet"
+	curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet
 
 Pull Tweet:
 	

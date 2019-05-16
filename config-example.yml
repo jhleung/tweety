@@ -1,0 +1,6 @@
+twitterAuthorization:
+  debug: *****
+  oauthConsumerKey: **********************
+  oauthConsumerSecret: *********************************
+  oauthAccessToken: ****************************
+  oauthAccessTokenSecret: ***********************

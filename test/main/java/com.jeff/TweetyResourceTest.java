@@ -12,8 +12,6 @@ import twitter4j.ResponseList;
 
 import javax.ws.rs.core.Response;
 
-
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
