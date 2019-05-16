@@ -17,7 +17,7 @@ Run the following:
 
 Publish Tweet:
 
-	curl -d "tweet=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet"
+	curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet"
 
 Pull Tweet:
 	

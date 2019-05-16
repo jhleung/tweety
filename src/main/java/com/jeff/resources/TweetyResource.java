@@ -34,7 +34,7 @@ public class TweetyResource {
                 Status status = twitter.updateStatus(tweet);
                 rb.entity(status);
             } catch (TwitterException e) {
-                rb.status( Response.Status.INTERNAL_SERVER_ERROR);
+                rb.status(Response.Status.INTERNAL_SERVER_ERROR);
                 if (tweet.isEmpty()) {
                     rb.entity(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
                 } else if (e.getErrorMessage().equals("Status is a duplicate.")) {
