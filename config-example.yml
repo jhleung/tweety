@@ -4,3 +4,9 @@ twitterAuthorization:
   oauthConsumerSecret: *********************************
   oauthAccessToken: ****************************
   oauthAccessTokenSecret: ***********************
+
+logging:
+  level: OFF
+  loggers:
+    com:
+      level: *****
