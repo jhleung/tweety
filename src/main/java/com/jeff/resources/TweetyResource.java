@@ -32,10 +32,10 @@ public class TweetyResource {
     public Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
         logger.debug("Message to be published: \"{}\"", message);
-        Response.ResponseBuilder rb = Response.status(TweetyConstantsRepository.OK_STATUS);
+        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
         if (!validateLength(message)) {
-            rb.status(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_STATUS);
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             rb.entity(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
             logger.error(PUBLISH_TWEET_ERROR_MSG, message);
         } else {
@@ -43,7 +43,7 @@ public class TweetyResource {
                 rb.entity(twitter.updateStatus(message));
                 logger.info("Message \"{}\" published successfully", message);
             } catch (TwitterException e) {
-                rb.status(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_STATUS);
+                rb.status(Response.Status.INTERNAL_SERVER_ERROR);
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getErrorMessage(), e);
                 if (message.isEmpty()) {
                     rb.entity(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
@@ -64,13 +64,13 @@ public class TweetyResource {
     @Path("/timeline")
     public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
-        Response.ResponseBuilder rb = Response.status(TweetyConstantsRepository.OK_STATUS);
+        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
         try {
             rb.entity(twitter.getHomeTimeline());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
         } catch (TwitterException e) {
-            rb.status(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_STATUS);
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             rb.entity(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
             logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
         }

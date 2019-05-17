@@ -25,14 +25,12 @@ public class TweetyResourceTest {
 
     private static final TweetyResource tweetyResource = new TweetyResource(twitter);
     @ClassRule
-    private static final ResourceTestRule resources = ResourceTestRule.builder()
+    public static final ResourceTestRule resources = ResourceTestRule.builder()
             .addResource(new TweetyResource(twitter))
             .build();
 
-    private static final int OK_STATUS_CODE = TweetyConstantsRepository.OK_STATUS.getStatusCode();
-    private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = TweetyConstantsRepository.INTERNAL_SERVER_ERROR_STATUS.getStatusCode();
-
-
+    private static final int OK_STATUS_CODE = Response.Status.OK.getStatusCode();
+    private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Test
     public void testPullTimelineSuccess() throws TwitterException {
@@ -51,7 +49,7 @@ public class TweetyResourceTest {
 
         assertEquals(OK_STATUS_CODE, response.getStatus());
         assertEquals(responseList.size(), statusesResult.size());
-        IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
+        IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(),  statusesResult.get(i).getText()));
     }
 
     @Test
