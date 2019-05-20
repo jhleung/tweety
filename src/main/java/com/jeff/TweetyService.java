@@ -2,10 +2,12 @@ package com.jeff;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
-import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.util.List;
 
 public class TweetyService {
     private static TweetyService tweetyServiceInstance;
@@ -26,45 +28,33 @@ public class TweetyService {
         return tweetyServiceInstance;
     }
 
-    public Response publishTweet(String message) {
+    public Status publishTweet(String message) throws IOException {
         logger.debug("Message to be published: \"{}\"", message);
-        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
         if (!validateLength(message)) {
-            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
-            logger.error(PUBLISH_TWEET_ERROR_MSG, message);
+            throw new IOException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
         } else {
             try {
-                rb.entity(twitter.updateStatus(message));
-                logger.info("Message \"{}\" published successfully", message);
+                return twitter.updateStatus(message);
             } catch (TwitterException e) {
-                rb.status(Response.Status.INTERNAL_SERVER_ERROR);
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getErrorMessage(), e);
                 if (message.isEmpty()) {
-                    rb.entity(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+                    throw new IOException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
                 } else if (e.getErrorMessage().equals("Status is a duplicate.")) {
-                    rb.entity(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
+                    throw new IOException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
                 } else {
-                    rb.entity(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+                    throw new IOException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
                 }
             }
         }
-        return rb.build();
     }
 
-    public Response pullTweets() {
-        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
-
+    public List<Status> pullTweets() throws IOException {
         try {
-            rb.entity(twitter.getHomeTimeline());
-            logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
+            return twitter.getHomeTimeline();
         } catch (TwitterException e) {
-            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
-            logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
+            throw new IOException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
-        return rb.build();
     }
 
     private boolean validateLength(String status) {

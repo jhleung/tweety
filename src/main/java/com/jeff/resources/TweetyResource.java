@@ -11,6 +11,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 @Path("/api/1.0/twitter")
 public class TweetyResource {
@@ -27,7 +28,18 @@ public class TweetyResource {
     @Path("/tweet")
     public Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
-        return tweetyService.publishTweet(message);
+        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+
+        try {
+            rb.entity(tweetyService.publishTweet(message));
+            logger.info("Message \"{}\" published successfully", message);
+        } catch (IOException e) {
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
+            rb.entity(e.getMessage());
+        }
+
+        logger.trace("Reached end of POST request to /api/1.0/twitter/tweet");
+        return rb.build();
     }
 
     @GET
@@ -35,6 +47,14 @@ public class TweetyResource {
     @Path("/timeline")
     public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
-        return tweetyService.pullTweets();
+        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+        try {
+            rb.entity(tweetyService.pullTweets());
+        } catch (IOException e) {
+            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
+            rb.entity(e.getMessage());
+        }
+
+        return rb.build();
     }
 }
