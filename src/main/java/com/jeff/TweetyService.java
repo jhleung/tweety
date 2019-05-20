@@ -14,7 +14,6 @@ public class TweetyService {
 
     private final Twitter twitter;
 
-    private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
     private TweetyService(Twitter t) {
@@ -35,9 +34,11 @@ public class TweetyService {
             throw new IOException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
         } else {
             try {
-                return twitter.updateStatus(message);
+                Status status = twitter.updateStatus(message);
+                logger.info("Message \"{}\" published successfully", message);
+                return status;
             } catch (TwitterException e) {
-                logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getErrorMessage(), e);
+                logger.error("Message \"{}\" was not published successfully.", message, e.getErrorMessage(), e);
                 if (message.isEmpty()) {
                     throw new IOException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
                 } else if (e.getErrorMessage().equals("Status is a duplicate.")) {
@@ -51,8 +52,11 @@ public class TweetyService {
 
     public List<Status> pullTweets() throws IOException {
         try {
-            return twitter.getHomeTimeline();
+            List<Status> statuses =  twitter.getHomeTimeline();
+            logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
+            return statuses;
         } catch (TwitterException e) {
+            logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
             throw new IOException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }

@@ -55,6 +55,7 @@ public class TweetyResource {
             rb.entity(e.getMessage());
         }
 
+        logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
         return rb.build();
     }
 }
