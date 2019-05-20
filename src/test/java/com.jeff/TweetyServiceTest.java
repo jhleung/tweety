@@ -7,7 +7,6 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterObjectFactory;
 import twitter4j.ResponseList;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -37,7 +36,7 @@ public class TweetyServiceTest {
             List<Status> statusesResult = tweetyService.pullTweets();
             assertEquals(responseList.size(), statusesResult.size());
             IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertFalse(false);
         }
     }
@@ -48,7 +47,7 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
             tweetyService.pullTweets();
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }
     }
@@ -67,7 +66,7 @@ public class TweetyServiceTest {
         try {
             Status s = tweetyService.publishTweet(message);
             assertEquals(st.getText(), s.getText());
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertFalse(false);
         }
     }
@@ -85,7 +84,7 @@ public class TweetyServiceTest {
                         ));
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG, e.getMessage());
 
         }
@@ -99,7 +98,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, e.getMessage());
 
         }
@@ -114,7 +113,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG, e.getMessage());
 
         }
@@ -129,7 +128,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
 
         }

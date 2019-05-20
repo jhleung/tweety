@@ -1,5 +1,6 @@
 package com.jeff.resources;
 
+import com.jeff.TweetyException;
 import com.jeff.TweetyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 @Path("/api/1.0/twitter")
 public class TweetyResource {
@@ -33,7 +33,7 @@ public class TweetyResource {
         try {
             rb.entity(tweetyService.publishTweet(message));
             logger.info("Message \"{}\" published successfully", message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             rb.entity(e.getMessage());
         }
@@ -50,7 +50,7 @@ public class TweetyResource {
         Response.ResponseBuilder rb = Response.status(Response.Status.OK);
         try {
             rb.entity(tweetyService.pullTweets());
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             rb.entity(e.getMessage());
         }
