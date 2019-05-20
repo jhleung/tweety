@@ -26,11 +26,12 @@ public class TweetyApplication extends Application<TweetyConfiguration> {
                 .setOAuthConsumerSecret(TwitterAuthorizationConfiguration.getOAuthConsumerSecret())
                 .setOAuthAccessToken(TwitterAuthorizationConfiguration.getOAuthAccessToken())
                 .setOAuthAccessTokenSecret(TwitterAuthorizationConfiguration.getOAuthAccessTokenSecret());
-        TwitterFactory factory = new TwitterFactory(cb.build());
-        Twitter twitter = factory.getInstance();
-        TweetyResource tweetyResource = new TweetyResource(twitter);
+
+        Twitter twitter = new TwitterFactory(cb.build()).getInstance();
+        TweetyService tweetyService = TweetyService.getInstance(twitter);
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
+
         environment.jersey().register(tweetyResource);
         logger.info("Tweety application started successfully.");
-
     }
 }
