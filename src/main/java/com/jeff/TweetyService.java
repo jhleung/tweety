@@ -19,7 +19,7 @@ public class TweetyService {
         twitter = t;
     }
 
-    public static synchronized TweetyService getInstance(Twitter t) {
+    public static TweetyService getInstance(Twitter t) {
         if (tweetyServiceInstance == null) {
             tweetyServiceInstance = new TweetyService(t);
         }
