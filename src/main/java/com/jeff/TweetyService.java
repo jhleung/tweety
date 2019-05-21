@@ -41,7 +41,9 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                TweetyStatus tweetyStatus = createTweetyStatus(twitter.updateStatus(message));
+                Status s = twitter.updateStatus(message);
+                TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                                                s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
                 logger.info("Message \"{}\" published successfully", message);
                 return tweetyStatus;
             } catch (TwitterException e) {
@@ -58,23 +60,14 @@ public class TweetyService {
     public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
             List<TweetyStatus> tweetyStatuses = new ArrayList<>();
-            twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(createTweetyStatus(s)));
+            twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                                                        s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())));
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
             return tweetyStatuses;
         } catch (TwitterException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
-    }
-
-    private TweetyStatus createTweetyStatus(Status s) {
-        return new TweetyStatus.TweetyBuilder()
-                .message(s.getText())
-                .handle(s.getUser().getScreenName())
-                .name(s.getUser().getName())
-                .profileImageUrl(s.getUser().getProfileImageURLHttps())
-                .createdAt(s.getCreatedAt())
-                .build();
     }
 
     private boolean validateLength(String status) {
