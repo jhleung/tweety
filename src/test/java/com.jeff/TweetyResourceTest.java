@@ -24,7 +24,7 @@ public class TweetyResourceTest {
     private static final int OK_STATUS_CODE = Response.Status.OK.getStatusCode();
     private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
-
+    @Test
     public void testPullTimelineSuccess() throws TweetyException {
         TweetyStatus st1 =  mock(TweetyStatus.class);
         TweetyStatus st2 =  mock(TweetyStatus.class);
@@ -79,7 +79,7 @@ public class TweetyResourceTest {
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }
 
-
+    @Test
     public void testPublishTweetSuccess() throws TweetyException {
         String message = "value12";
         TweetyStatus st = mock(TweetyStatus.class);

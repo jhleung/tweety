@@ -45,7 +45,6 @@ public class TweetyServiceTest {
                 assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getProfileImageUrl());
                 assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
             }
-            IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getMessage()));
         } catch (TweetyException e) {
             assertFalse(false);
         }
