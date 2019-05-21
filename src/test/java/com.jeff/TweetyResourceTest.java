@@ -1,15 +1,14 @@
 package com.jeff;
 
+import com.jeff.models.TweetyStatus;
 import com.jeff.resources.TweetyResource;
 import org.junit.Test;
-import twitter4j.Status;
 import twitter4j.TwitterException;
-import twitter4j.TwitterObjectFactory;
-import twitter4j.ResponseList;
 
 import javax.ws.rs.core.Response;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -26,11 +25,29 @@ public class TweetyResourceTest {
     private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Test
-    public void testPullTimelineSuccess() throws TwitterException, IOException {
-        Status st1 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st2 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st3 =  TwitterObjectFactory.createStatus("{\"text\":\"st3\"}");
-        ResponseList<Status> responseList = new MyResponseList<>();
+    public void testPullTimelineSuccess() throws TweetyException {
+        TweetyStatus st1 =  mock(TweetyStatus.class);
+        TweetyStatus st2 =  mock(TweetyStatus.class);
+        TweetyStatus st3 =  mock(TweetyStatus.class);
+        when(st1.getMessage()).thenReturn("st1");
+        when(st1.getHandle()).thenReturn("jimmyhandle");
+        when(st1.getName()).thenReturn("jimmy");
+        when(st1.getProfileImageUrl()).thenReturn("https://jimmy.com");
+        when(st1.getCreatedAt()).thenReturn(new Date());
+
+        when(st2.getMessage()).thenReturn("st2");
+        when(st2.getHandle()).thenReturn("johnhandle");
+        when(st2.getName()).thenReturn("john");
+        when(st2.getProfileImageUrl()).thenReturn("https://john.com");
+        when(st2.getCreatedAt()).thenReturn(new Date());
+
+        when(st3.getMessage()).thenReturn("st3");
+        when(st1.getHandle()).thenReturn("jackhandle");
+        when(st1.getName()).thenReturn("jack");
+        when(st1.getProfileImageUrl()).thenReturn("https://jack.com");
+        when(st1.getCreatedAt()).thenReturn(new Date());
+
+        List<TweetyStatus> responseList = new ArrayList<>();
         responseList.add(st1);
         responseList.add(st2);
         responseList.add(st3);
@@ -38,17 +55,24 @@ public class TweetyResourceTest {
         when(tweetyService.pullTweets()).thenReturn(responseList);
 
         Response response = tweetyResource.pullTweets();
-        List<Status> statusesResult = (List<Status>) response.getEntity();
+        List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
 
         assertEquals(OK_STATUS_CODE, response.getStatus());
         assertEquals(responseList.size(), statusesResult.size());
-        IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
-
+        for (int i = 0; i < responseList.size(); i++) {
+            TweetyStatus expected = responseList.get(i);
+            TweetyStatus actual = statusesResult.get(i);
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(expected.getHandle(), actual.getHandle());
+            assertEquals(expected.getName(), actual.getName());
+            assertEquals(expected.getProfileImageUrl(), actual.getProfileImageUrl());
+            assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+        }
     }
 
     @Test
-    public void testPullTimelineFailure() throws IOException {
-        when(tweetyService.pullTweets()).thenThrow(new IOException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
+    public void testPullTimelineFailure() throws TweetyException {
+        when(tweetyService.pullTweets()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
         Response response = tweetyResource.pullTweets();
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
@@ -56,28 +80,35 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishTweetSuccess() throws TwitterException, IOException {
+    public void testPublishTweetSuccess() throws TweetyException {
         String message = "value12";
-        Status st = mock(Status.class);
-        when(st.getText()).thenReturn(message);
-        when(tweetyService.publishTweet(message))
-                .thenReturn(
-                        TwitterObjectFactory.createStatus(
-                                "{\"text\":\"" + message + "\"}"
-                        ));
+        TweetyStatus st = mock(TweetyStatus.class);
+        when(st.getMessage()).thenReturn(message);
+        when(st.getHandle()).thenReturn("jimmyhandle");
+        when(st.getName()).thenReturn("jimmy");
+        when(st.getProfileImageUrl()).thenReturn("https://jimmy.com");
+        when(st.getCreatedAt()).thenReturn(new Date());
+
+        when(tweetyService.publishTweet(message)).thenReturn(st);
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(OK_STATUS_CODE, response.getStatus());
-        assertEquals(st.getText(), ((Status) response.getEntity()).getText());
+
+        TweetyStatus tweetyStatus = (TweetyStatus) response.getEntity();
+        assertEquals(st.getMessage(), tweetyStatus.getMessage());
+        assertEquals(st.getHandle(), tweetyStatus.getHandle());
+        assertEquals(st.getName(), tweetyStatus.getName());
+        assertEquals(st.getProfileImageUrl(), tweetyStatus.getProfileImageUrl());
+        assertEquals(st.getCreatedAt(), tweetyStatus.getCreatedAt());
     }
 
     @Test
-    public void testPublishTweetExceedMaxLength() throws IOException {
+    public void testPublishTweetExceedMaxLength() throws TweetyException {
         StringBuilder sb = new StringBuilder("");
         IntStream.range(0, TweetyConstantsRepository.MAX_TWEET_LENGTH + 1).forEach(i -> sb.append("x"));
         String message = sb.toString();
 
-        when(tweetyService.publishTweet(message)).thenThrow(new IOException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG));
+        when(tweetyService.publishTweet(message)).thenThrow(new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG));
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
@@ -85,9 +116,9 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishEmptyTweet() throws IOException {
+    public void testPublishEmptyTweet() throws TweetyException {
         String message = "";
-        when(tweetyService.publishTweet(message)).thenThrow(new IOException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG));
+        when(tweetyService.publishTweet(message)).thenThrow(new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG));
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
@@ -95,11 +126,11 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishDuplicateTweet() throws IOException {
+    public void testPublishDuplicateTweet() throws TweetyException {
         String message = "duplicateStatus";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Status is a duplicate.");
-        when(tweetyService.publishTweet(message)).thenThrow(new IOException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG));
+        when(tweetyService.publishTweet(message)).thenThrow(new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG));
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
@@ -107,11 +138,11 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishTweetGenericException() throws IOException {
+    public void testPublishTweetGenericException() throws TweetyException {
         String message = "message";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
-        when(tweetyService.publishTweet(message)).thenThrow(new IOException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
+        when(tweetyService.publishTweet(message)).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());

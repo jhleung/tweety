@@ -1,13 +1,10 @@
 package com.jeff;
 
+import com.jeff.models.TweetyStatus;
 import org.junit.Test;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterObjectFactory;
-import twitter4j.ResponseList;
+import twitter4j.*;
 
-import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -23,9 +20,12 @@ public class TweetyServiceTest {
 
     @Test
     public void testPullTimelineSuccess() throws TwitterException {
-        Status st1 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st2 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st3 =  TwitterObjectFactory.createStatus("{\"text\":\"st3\"}");
+        Status st1 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453000," +
+                "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
+        Status st2 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https:test2.com\"}}");
+        Status st3 =  TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"tes3t\", \"profileImageURLHttps\":\"https:test3com\"}}");
         ResponseList<Status> responseList = new MyResponseList<>();
         responseList.add(st1);
         responseList.add(st2);
@@ -34,10 +34,19 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenReturn(responseList);
 
         try {
-            List<Status> statusesResult = tweetyService.pullTweets();
+            List<TweetyStatus> statusesResult = tweetyService.pullTweets();
             assertEquals(responseList.size(), statusesResult.size());
-            IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
-        } catch (IOException e) {
+            for (int i = 0; i < responseList.size(); i++) {
+                Status expected = responseList.get(i);
+                TweetyStatus actual = statusesResult.get(i);
+                assertEquals(expected.getText(), actual.getMessage());
+                assertEquals(expected.getUser().getScreenName(), actual.getHandle());
+                assertEquals(expected.getUser().getName(), actual.getName());
+                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getProfileImageUrl());
+                assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+            }
+            IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getMessage()));
+        } catch (TweetyException e) {
             assertFalse(false);
         }
     }
@@ -48,7 +57,7 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
             tweetyService.pullTweets();
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }
     }
@@ -58,16 +67,23 @@ public class TweetyServiceTest {
         String message = "value12";
 
         Status st = mock(Status.class);
+        User u = mock(User.class);
+        when(u.getScreenName()).thenReturn("jimmy");
+        when(u.getName()).thenReturn("jimmy");
+        when(u.getProfileImageURLHttps()).thenReturn("jimmy");
         when(st.getText()).thenReturn(message);
-        when(twitter.updateStatus(message))
-                .thenReturn(
-                    TwitterObjectFactory.createStatus(
-                            "{\"text\":\"" + message + "\"}"
-                    ));
+        when(st.getUser()).thenReturn(u);
+        when(st.getCreatedAt()).thenReturn(new Date());
+        when(twitter.updateStatus(message)).thenReturn(st);
+
         try {
-            Status s = tweetyService.publishTweet(message);
-            assertEquals(st.getText(), s.getText());
-        } catch (IOException e) {
+            TweetyStatus s = tweetyService.publishTweet(message);
+            assertEquals(st.getText(), s.getMessage());
+            assertEquals(st.getUser().getScreenName(), s.getHandle());
+            assertEquals(st.getUser().getName(), s.getName());
+            assertEquals(st.getUser().getProfileImageURLHttps(), s.getProfileImageUrl());
+            assertEquals(st.getCreatedAt(), s.getCreatedAt());
+        } catch (TweetyException e) {
             assertFalse(false);
         }
     }
@@ -85,7 +101,7 @@ public class TweetyServiceTest {
                         ));
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG, e.getMessage());
 
         }
@@ -99,7 +115,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, e.getMessage());
 
         }
@@ -114,7 +130,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG, e.getMessage());
 
         }
@@ -129,7 +145,7 @@ public class TweetyServiceTest {
 
         try {
             tweetyService.publishTweet(message);
-        } catch (IOException e) {
+        } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
 
         }
