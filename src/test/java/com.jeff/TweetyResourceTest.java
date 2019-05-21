@@ -26,26 +26,9 @@ public class TweetyResourceTest {
 
     @Test
     public void testPullTimelineSuccess() throws TweetyException {
-        TweetyStatus st1 =  mock(TweetyStatus.class);
-        TweetyStatus st2 =  mock(TweetyStatus.class);
-        TweetyStatus st3 =  mock(TweetyStatus.class);
-        when(st1.getMessage()).thenReturn("st1");
-        when(st1.getHandle()).thenReturn("jimmyhandle");
-        when(st1.getName()).thenReturn("jimmy");
-        when(st1.getProfileImageUrl()).thenReturn("https://jimmy.com");
-        when(st1.getCreatedAt()).thenReturn(new Date());
-
-        when(st2.getMessage()).thenReturn("st2");
-        when(st2.getHandle()).thenReturn("johnhandle");
-        when(st2.getName()).thenReturn("john");
-        when(st2.getProfileImageUrl()).thenReturn("https://john.com");
-        when(st2.getCreatedAt()).thenReturn(new Date());
-
-        when(st3.getMessage()).thenReturn("st3");
-        when(st1.getHandle()).thenReturn("jackhandle");
-        when(st1.getName()).thenReturn("jack");
-        when(st1.getProfileImageUrl()).thenReturn("https://jack.com");
-        when(st1.getCreatedAt()).thenReturn(new Date());
+        TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+        TweetyStatus st2 =   mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =   mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
 
         List<TweetyStatus> responseList = new ArrayList<>();
         responseList.add(st1);
@@ -82,12 +65,7 @@ public class TweetyResourceTest {
     @Test
     public void testPublishTweetSuccess() throws TweetyException {
         String message = "value12";
-        TweetyStatus st = mock(TweetyStatus.class);
-        when(st.getMessage()).thenReturn(message);
-        when(st.getHandle()).thenReturn("jimmyhandle");
-        when(st.getName()).thenReturn("jimmy");
-        when(st.getProfileImageUrl()).thenReturn("https://jimmy.com");
-        when(st.getCreatedAt()).thenReturn(new Date());
+        TweetyStatus st = mockTweetyStatus(message, "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
 
         when(tweetyService.publishTweet(message)).thenReturn(st);
 
@@ -147,5 +125,15 @@ public class TweetyResourceTest {
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
+    }
+
+    private TweetyStatus mockTweetyStatus(String message, String handle, String name, String profileImageUrl, Date createdAt) {
+        TweetyStatus st =  mock(TweetyStatus.class);
+        when(st.getMessage()).thenReturn(message);
+        when(st.getHandle()).thenReturn(handle);
+        when(st.getName()).thenReturn(name);
+        when(st.getProfileImageUrl()).thenReturn(profileImageUrl);
+        when(st.getCreatedAt()).thenReturn(createdAt);
+        return st;
     }
 }
