@@ -28,7 +28,7 @@ public class TweetyResource {
     @Path("/tweet")
     public Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
-        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+        final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
         try {
             rb.entity(tweetyService.publishTweet(message));
@@ -47,7 +47,7 @@ public class TweetyResource {
     @Path("/timeline")
     public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
-        Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+        final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
         try {
             rb.entity(tweetyService.pullTweets());
         } catch (TweetyException e) {

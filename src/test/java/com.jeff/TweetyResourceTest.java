@@ -27,8 +27,8 @@ public class TweetyResourceTest {
     @Test
     public void testPullTimelineSuccess() throws TweetyException {
         TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
-        TweetyStatus st2 =   mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
-        TweetyStatus st3 =   mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
+        TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
 
         List<TweetyStatus> responseList = new ArrayList<>();
         responseList.add(st1);

@@ -41,8 +41,8 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                Status s = twitter.updateStatus(message);
-                TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                final Status s = twitter.updateStatus(message);
+                final TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                                                 s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
                 logger.info("Message \"{}\" published successfully", message);
                 return tweetyStatus;
@@ -59,7 +59,7 @@ public class TweetyService {
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
-            List<TweetyStatus> tweetyStatuses = new ArrayList<>();
+            final List<TweetyStatus> tweetyStatuses = new ArrayList<>();
             twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                                                         s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())));
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
