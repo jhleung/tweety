@@ -1,14 +1,14 @@
 package com.jeff;
 
+import com.jeff.models.TweetyStatus;
 import com.jeff.resources.TweetyResource;
 import org.junit.Test;
-import twitter4j.Status;
 import twitter4j.TwitterException;
-import twitter4j.TwitterObjectFactory;
-import twitter4j.ResponseList;
 
 import javax.ws.rs.core.Response;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -25,11 +25,12 @@ public class TweetyResourceTest {
     private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Test
-    public void testPullTimelineSuccess() throws TwitterException, TweetyException {
-        Status st1 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st2 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\"}");
-        Status st3 =  TwitterObjectFactory.createStatus("{\"text\":\"st3\"}");
-        ResponseList<Status> responseList = new MyResponseList<>();
+    public void testPullTimelineSuccess() throws TweetyException {
+        TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+        TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
+
+        List<TweetyStatus> responseList = new ArrayList<>();
         responseList.add(st1);
         responseList.add(st2);
         responseList.add(st3);
@@ -37,12 +38,19 @@ public class TweetyResourceTest {
         when(tweetyService.pullTweets()).thenReturn(responseList);
 
         Response response = tweetyResource.pullTweets();
-        List<Status> statusesResult = (List<Status>) response.getEntity();
+        List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
 
         assertEquals(OK_STATUS_CODE, response.getStatus());
         assertEquals(responseList.size(), statusesResult.size());
-        IntStream.range(0, responseList.size()).forEach(i -> assertEquals(responseList.get(i).getText(), statusesResult.get(i).getText()));
-
+        for (int i = 0; i < responseList.size(); i++) {
+            TweetyStatus expected = responseList.get(i);
+            TweetyStatus actual = statusesResult.get(i);
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(expected.getHandle(), actual.getHandle());
+            assertEquals(expected.getName(), actual.getName());
+            assertEquals(expected.getProfileImageUrl(), actual.getProfileImageUrl());
+            assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+        }
     }
 
     @Test
@@ -55,19 +63,21 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPublishTweetSuccess() throws TwitterException, TweetyException {
+    public void testPublishTweetSuccess() throws TweetyException {
         String message = "value12";
-        Status st = mock(Status.class);
-        when(st.getText()).thenReturn(message);
-        when(tweetyService.publishTweet(message))
-                .thenReturn(
-                        TwitterObjectFactory.createStatus(
-                                "{\"text\":\"" + message + "\"}"
-                        ));
+        TweetyStatus st = mockTweetyStatus(message, "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+
+        when(tweetyService.publishTweet(message)).thenReturn(st);
 
         Response response = tweetyResource.publishTweet(message);
         assertEquals(OK_STATUS_CODE, response.getStatus());
-        assertEquals(st.getText(), ((Status) response.getEntity()).getText());
+
+        TweetyStatus tweetyStatus = (TweetyStatus) response.getEntity();
+        assertEquals(st.getMessage(), tweetyStatus.getMessage());
+        assertEquals(st.getHandle(), tweetyStatus.getHandle());
+        assertEquals(st.getName(), tweetyStatus.getName());
+        assertEquals(st.getProfileImageUrl(), tweetyStatus.getProfileImageUrl());
+        assertEquals(st.getCreatedAt(), tweetyStatus.getCreatedAt());
     }
 
     @Test
@@ -115,5 +125,15 @@ public class TweetyResourceTest {
         Response response = tweetyResource.publishTweet(message);
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
+    }
+
+    private TweetyStatus mockTweetyStatus(String message, String handle, String name, String profileImageUrl, Date createdAt) {
+        TweetyStatus st =  mock(TweetyStatus.class);
+        when(st.getMessage()).thenReturn(message);
+        when(st.getHandle()).thenReturn(handle);
+        when(st.getName()).thenReturn(name);
+        when(st.getProfileImageUrl()).thenReturn(profileImageUrl);
+        when(st.getCreatedAt()).thenReturn(createdAt);
+        return st;
     }
 }

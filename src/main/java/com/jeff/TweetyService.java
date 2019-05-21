@@ -1,11 +1,14 @@
 package com.jeff;
 
+import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TweetyService {
@@ -27,7 +30,7 @@ public class TweetyService {
         return tweetyServiceInstance;
     }
 
-    public Status publishTweet(String message) throws TweetyException {
+    public TweetyStatus publishTweet(String message) throws TweetyException {
         logger.debug("Message to be published: \"{}\"", message);
 
         if (!validateLength(message)) {
@@ -38,9 +41,11 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                Status status = twitter.updateStatus(message);
+                final Status s = twitter.updateStatus(message);
+                final TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                                                s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
                 logger.info("Message \"{}\" published successfully", message);
-                return status;
+                return tweetyStatus;
             } catch (TwitterException e) {
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getErrorMessage(), e);
                  if (e.getErrorMessage().equals("Status is a duplicate.")) {
@@ -52,11 +57,13 @@ public class TweetyService {
         }
     }
 
-    public List<Status> pullTweets() throws TweetyException {
+    public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
-            List<Status> statuses =  twitter.getHomeTimeline();
+            final List<TweetyStatus> tweetyStatuses = new ArrayList<>();
+            twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                                                        s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())));
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
-            return statuses;
+            return tweetyStatuses;
         } catch (TwitterException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
