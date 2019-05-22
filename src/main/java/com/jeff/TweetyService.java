@@ -3,6 +3,7 @@ package com.jeff;
 import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import twitter4j.Query;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -10,6 +11,8 @@ import twitter4j.TwitterException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TweetyService {
     private static TweetyService tweetyServiceInstance;
@@ -66,6 +69,21 @@ public class TweetyService {
             return tweetyStatuses;
         } catch (TwitterException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+        }
+    }
+
+    public Optional<List<TweetyStatus>> filterTweets(String keyword) throws TweetyException {
+        try {
+            final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
+                    .filter(s -> s.getText().contains(keyword))
+                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .collect(Collectors.toList());
+            logger.info("Filtered tweets were pulled successfully.");
+            return tweetyStatuses.isEmpty() ? Optional.empty() : Optional.ofNullable(tweetyStatuses);
+        } catch (TwitterException e) {
+            logger.error("Filtered tweets were not pulled successfully. {}", e.getErrorMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }

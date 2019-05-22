@@ -6,26 +6,27 @@ import twitter4j.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 public class TweetyServiceTest {
-    private static final Twitter twitter = mock(Twitter.class);
+    private static Twitter twitter = mock(Twitter.class);
     private static final TweetyService tweetyService = TweetyService.getInstance(twitter);
 
     @Test
     public void testPullTimelineSuccess() throws TwitterException {
-        Status st1 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453000," +
+        Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
                 "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
-        Status st2 =  TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
-                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https:test2.com\"}}");
-        Status st3 =  TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
-                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"tes3t\", \"profileImageURLHttps\":\"https:test3com\"}}");
+        Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https://test2.com\"}}");
+        Status st3 = TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
+                "\"user\":{\"name\":\"sthandle3\", \"screenName\":\"test3\", \"profileImageURLHttps\":\"https:..test3.com\"}}");
         ResponseList<Status> responseList = new MyResponseList<>();
         responseList.add(st1);
         responseList.add(st2);
@@ -48,17 +49,91 @@ public class TweetyServiceTest {
         } catch (TweetyException e) {
             assertFalse(false);
         }
+        reset(twitter);
     }
 
     @Test
     public void testPullTimelineFailure() throws TwitterException {
         TwitterException twitterException = mock(TwitterException.class);
+        when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
             tweetyService.pullTweets();
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }
+        reset(twitter);
+    }
+
+    @Test
+    public void filterTweetsSuccessNoMatches() throws TwitterException {
+        Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
+                "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
+        Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https://test2.com\"}}");
+        Status st3 = TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
+                "\"user\":{\"name\":\"sthandle3\", \"screenName\":\"test3\", \"profileImageURLHttps\":\"https://test3.com\"}}");
+        ResponseList<Status> responseList = new MyResponseList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(twitter.getHomeTimeline()).thenReturn(responseList);
+
+        try {
+            Optional<List<TweetyStatus>> optionalList = tweetyService.filterTweets("test");
+            assertFalse(optionalList.isPresent());
+        } catch (TweetyException e) {
+            assertFalse(false);
+        }
+        reset(twitter);
+    }
+
+    @Test
+    public void filterTweetsSuccessMatchesFound() throws TwitterException {
+        Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
+                "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
+        Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https://test2.com\"}}");
+        Status st3 = TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
+                "\"user\":{\"name\":\"sthandle3\", \"screenName\":\"test3\", \"profileImageURLHttps\":\"https://test3.com\"}}");
+        ResponseList<Status> responseList = new MyResponseList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(twitter.getHomeTimeline()).thenReturn(responseList);
+        try {
+            Optional<List<TweetyStatus>> optionalList = tweetyService.filterTweets("st");
+            assertTrue(optionalList.isPresent());
+            List<TweetyStatus> statusesResult = optionalList.get();
+            assertEquals(responseList.size(), statusesResult.size());
+            for (int i = 0; i < responseList.size(); i++) {
+                Status expected = responseList.get(i);
+                TweetyStatus actual = statusesResult.get(i);
+                assertEquals(expected.getText(), actual.getMessage());
+                assertEquals(expected.getUser().getScreenName(), actual.getHandle());
+                assertEquals(expected.getUser().getName(), actual.getName());
+                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getProfileImageUrl());
+                assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+            }
+        } catch (TweetyException e) {
+            assertFalse(false);
+        }
+        reset(twitter);
+    }
+
+    @Test
+    public void filterTweetsFailure() throws TwitterException {
+        TwitterException twitterException = mock(TwitterException.class);
+        when(twitterException.getErrorMessage()).thenReturn("test");
+        when(twitter.getHomeTimeline()).thenThrow(twitterException);
+        try {
+            tweetyService.filterTweets("test");
+        } catch (TweetyException e) {
+            assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
+        }
+        reset(twitter);
     }
 
     @Test
@@ -85,6 +160,7 @@ public class TweetyServiceTest {
         } catch (TweetyException e) {
             assertFalse(false);
         }
+        reset(twitter);
     }
 
     @Test
@@ -104,12 +180,14 @@ public class TweetyServiceTest {
             assertEquals(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG, e.getMessage());
 
         }
+        reset(twitter);
     }
 
     @Test
     public void testPublishEmptyTweet() throws TwitterException {
         String message = "";
         TwitterException twitterException = mock(TwitterException.class);
+        when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         try {
@@ -118,6 +196,7 @@ public class TweetyServiceTest {
             assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, e.getMessage());
 
         }
+        reset(twitter);
     }
 
     @Test
@@ -133,6 +212,7 @@ public class TweetyServiceTest {
             assertEquals(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG, e.getMessage());
 
         }
+        reset(twitter);
     }
 
     @Test
@@ -148,5 +228,6 @@ public class TweetyServiceTest {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
 
         }
+        reset(twitter);
     }
 }
