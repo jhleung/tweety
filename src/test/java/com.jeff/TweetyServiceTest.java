@@ -81,8 +81,8 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenReturn(responseList);
 
         try {
-            Optional<List<TweetyStatus>> optionalList = tweetyService.filterTweets("test");
-            assertFalse(optionalList.isPresent());
+            List<TweetyStatus> statusesResult = tweetyService.filterTweets("test");
+            assertTrue(statusesResult.isEmpty());
         } catch (TweetyException e) {
             assertFalse(false);
         }
@@ -104,9 +104,7 @@ public class TweetyServiceTest {
 
         when(twitter.getHomeTimeline()).thenReturn(responseList);
         try {
-            Optional<List<TweetyStatus>> optionalList = tweetyService.filterTweets("st");
-            assertTrue(optionalList.isPresent());
-            List<TweetyStatus> statusesResult = optionalList.get();
+            List<TweetyStatus> statusesResult = tweetyService.filterTweets("st");
             assertEquals(responseList.size(), statusesResult.size());
             for (int i = 0; i < responseList.size(); i++) {
                 Status expected = responseList.get(i);

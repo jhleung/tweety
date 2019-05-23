@@ -74,7 +74,7 @@ public class TweetyResourceTest {
         responseList.add(st2);
         responseList.add(st3);
 
-        when(tweetyService.filterTweets("test")).thenReturn(Optional.empty());
+        when(tweetyService.filterTweets("test")).thenReturn(new ArrayList<>());
 
         Response response = tweetyResource.filterTweets("test");
         List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
@@ -94,7 +94,7 @@ public class TweetyResourceTest {
         responseList.add(st2);
         responseList.add(st3);
 
-        when(tweetyService.filterTweets("st")).thenReturn(Optional.ofNullable(responseList));
+        when(tweetyService.filterTweets("st")).thenReturn(responseList);
 
         Response response = tweetyResource.filterTweets("st");
         List<TweetyStatus> statusesResult = (ArrayList<TweetyStatus>) response.getEntity();
