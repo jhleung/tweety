@@ -3,7 +3,6 @@ package com.jeff;
 import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import twitter4j.Query;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TweetyService {
     private static TweetyService tweetyServiceInstance;
@@ -75,7 +75,10 @@ public class TweetyService {
 
     public Optional<List<TweetyStatus>> filterTweets(String keyword) throws TweetyException {
         try {
-            final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
+            final List<TweetyStatus> tweetyStatuses = Optional.ofNullable(twitter.getHomeTimeline())
+                    .map(List::stream)
+                    .orElse(Stream.empty())
+                    .filter(s -> Optional.ofNullable(s.getText()).isPresent())
                     .filter(s -> s.getText().contains(keyword))
                     .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))

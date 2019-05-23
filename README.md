@@ -41,6 +41,9 @@ Publish Tweet:
 Pull Tweet:
   
    curl http://localhost:8080/api/1.0/twitter/timeline
+
+Filter Tweet:
+	curl http://localhost:8080/api/1.0/timeline/filter?keyword=<keyword>
   
 Coverage:
    run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
