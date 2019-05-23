@@ -26,26 +26,23 @@ public class TweetyResource {
         tweetyService = ts;
     }
 
+    private static final TweetyResponseBuilder tweetyResponseBuilder = (s, e) -> Response.status(s).entity(e);
+
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/tweet")
     public Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
-        TweetyResponseBuilder tweetyResponseBuilder = () -> {
-            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
-            try {
-                rb.entity(tweetyService.publishTweet(message));
-                logger.info("Message \"{}\" published successfully", message);
-            } catch (TweetyException e) {
-                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
-            }
-
-            return rb.build();
-        };
+        Response.ResponseBuilder rb;
+        try {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK, tweetyService.publishTweet(message));
+            logger.info("Message \"{}\" published successfully", message);
+        } catch (TweetyException e) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
         logger.trace("Reached end of POST request to /api/1.0/twitter/tweet");
-
-        return tweetyResponseBuilder.buildTweetyResponse();
+        return rb.build();
     }
 
     @GET
@@ -53,18 +50,16 @@ public class TweetyResource {
     @Path("/twitter/timeline")
     public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
-        TweetyResponseBuilder tweetyResponseBuilder = () -> {
-            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
-            try {
-                rb.entity(tweetyService.pullTweets());
-            } catch (TweetyException e) {
-                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
-            }
-            return rb.build();
-        };
 
+        Response.ResponseBuilder rb;
+        try {
+            List<TweetyStatus> tweetyStatuses = tweetyService.pullTweets();
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK, tweetyStatuses);
+        } catch (TweetyException e) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
         logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
-        return tweetyResponseBuilder.buildTweetyResponse();
+        return rb.build();
     }
 
     @GET
@@ -72,23 +67,25 @@ public class TweetyResource {
     @Path("/timeline/filter")
     public Response filterTweets(@QueryParam("keyword") String keyword) {
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
-        TweetyResponseBuilder tweetyResponseBuilder = () -> {
-            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
-            try {
-                final List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
-                rb.entity(tweetyStatuses.isEmpty() ? "No results were found" : tweetyStatuses);
-            } catch (TweetyException e) {
-                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
-            }
-            return rb.build();
-        };
 
-        logger.trace("Reached end of GET request to /api/1.0/timeline/filter");
-        return tweetyResponseBuilder.buildTweetyResponse();
+        Response.ResponseBuilder rb;
+        try {
+            List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
+            if (tweetyStatuses.isEmpty())
+                rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK, "No results were found");
+            else
+                rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK, tweetyStatuses);
+        } catch (TweetyException e) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
+        logger.trace("Reached end of GET request to /api/1.0/timeline/failure");
+        return rb.build();
     }
 
     interface TweetyResponseBuilder {
-        Response buildTweetyResponse();
+        Response.ResponseBuilder buildTweetyResponse(Response.Status status, Object o);
     }
+
 }
 
