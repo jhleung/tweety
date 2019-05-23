@@ -1,5 +1,7 @@
-package com.jeff;
+package com.jeff.services;
 
+import com.jeff.TweetyConstantsRepository;
+import com.jeff.TweetyException;
 import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,9 +9,8 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TweetyService {
     private static TweetyService tweetyServiceInstance;
@@ -47,7 +48,7 @@ public class TweetyService {
                 logger.info("Message \"{}\" published successfully", message);
                 return tweetyStatus;
             } catch (TwitterException e) {
-                logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getErrorMessage(), e);
+                logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
                  if (e.getErrorMessage().equals("Status is a duplicate.")) {
                     throw new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
                 } else {
@@ -59,13 +60,32 @@ public class TweetyService {
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
-            final List<TweetyStatus> tweetyStatuses = new ArrayList<>();
-            twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                                                        s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())));
+            final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
+                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
             return tweetyStatuses;
-        } catch (TwitterException e) {
-            logger.error("Timeline was not pulled successfully. {}", e.getErrorMessage(), e);
+        } catch (TwitterException | NullPointerException e) {
+            logger.error("Timeline was not pulled successfully. {}", e.getMessage(), e);
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+        }
+    }
+
+    public List<TweetyStatus> filterTweets(String keyword) throws TweetyException {
+        try {
+            final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
+                    .filter(s -> s.getText().contains(keyword))
+                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .collect(Collectors.toList());
+            logger.info("Filtered tweets were pulled successfully.");
+            if (tweetyStatuses.isEmpty()) {
+                logger.info("No tweets containing keyword were found.");
+            }
+            return tweetyStatuses;
+        } catch (TwitterException | NullPointerException e) {
+            logger.error("Filtered tweets were not pulled successfully. {}", e.getMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }

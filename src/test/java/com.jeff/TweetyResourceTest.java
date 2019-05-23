@@ -2,6 +2,7 @@ package com.jeff;
 
 import com.jeff.models.TweetyStatus;
 import com.jeff.resources.TweetyResource;
+import com.jeff.services.TweetyService;
 import org.junit.Test;
 import twitter4j.TwitterException;
 
@@ -58,6 +59,63 @@ public class TweetyResourceTest {
         when(tweetyService.pullTweets()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
         Response response = tweetyResource.pullTweets();
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
+        assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
+    }
+
+    @Test
+    public void testFilterTweetsSuccessNoMatch() throws TweetyException {
+        TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+        TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
+
+        List<TweetyStatus> responseList = new ArrayList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(tweetyService.filterTweets("test")).thenReturn(new ArrayList<>());
+
+        Response response = tweetyResource.filterTweets("test");
+
+        assertEquals(OK_STATUS_CODE, response.getStatus());
+        assertEquals("No results were found", response.getEntity());
+    }
+
+    @Test
+    public void testFilterTweetsSuccessMatchFound() throws TweetyException {
+        TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+        TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
+
+        List<TweetyStatus> responseList = new ArrayList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(tweetyService.filterTweets("st")).thenReturn(responseList);
+
+        Response response = tweetyResource.filterTweets("st");
+        List<TweetyStatus> statusesResult = (ArrayList<TweetyStatus>) response.getEntity();
+
+        assertEquals(OK_STATUS_CODE, response.getStatus());
+        assertEquals(responseList.size(), statusesResult.size());
+        for (int i = 0; i < responseList.size(); i++) {
+            TweetyStatus expected = responseList.get(i);
+            TweetyStatus actual = statusesResult.get(i);
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(expected.getHandle(), actual.getHandle());
+            assertEquals(expected.getName(), actual.getName());
+            assertEquals(expected.getProfileImageUrl(), actual.getProfileImageUrl());
+            assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+        }
+    }
+
+    @Test
+    public void testFilterTweetsFailure() throws TweetyException {
+        when(tweetyService.filterTweets("test")).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
+
+        Response response = tweetyResource.filterTweets("test");
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }

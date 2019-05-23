@@ -1,6 +1,7 @@
 package com.jeff;
 
 import com.jeff.resources.TweetyResource;
+import com.jeff.services.TweetyService;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
