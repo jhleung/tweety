@@ -2,7 +2,12 @@ package com.jeff;
 
 import com.jeff.models.TweetyStatus;
 import org.junit.Test;
-import twitter4j.*;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterObjectFactory;
+import twitter4j.ResponseList;
+import twitter4j.User;
 
 import java.util.Date;
 import java.util.List;
