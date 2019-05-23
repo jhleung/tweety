@@ -20,6 +20,9 @@ public class TweetyService {
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
+    private final TweetyStatusBuilder tweetyStatusBuilder = (s) -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
+
     private TweetyService(Twitter t) {
         twitter = t;
     }
@@ -42,9 +45,7 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                final Status s = twitter.updateStatus(message);
-                final TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                                                s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
+                final TweetyStatus tweetyStatus = tweetyStatusBuilder.buildTweetyStatus(twitter.updateStatus(message));
                 logger.info("Message \"{}\" published successfully", message);
                 return tweetyStatus;
             } catch (TwitterException e) {
@@ -61,8 +62,7 @@ public class TweetyService {
     public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
-                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .map(tweetyStatusBuilder::buildTweetyStatus)
                     .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
             return tweetyStatuses;
@@ -76,8 +76,7 @@ public class TweetyService {
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .filter(s -> s.getText().contains(keyword))
-                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .map(tweetyStatusBuilder::buildTweetyStatus)
                     .collect(Collectors.toList());
             logger.info("Filtered tweets were pulled successfully.");
             if (tweetyStatuses.isEmpty()) {
@@ -92,5 +91,9 @@ public class TweetyService {
 
     private boolean validateLength(String status) {
         return status.length() <= TweetyConstantsRepository.MAX_TWEET_LENGTH;
+    }
+
+    interface TweetyStatusBuilder {
+        TweetyStatus buildTweetyStatus(Status status);
     }
 }
