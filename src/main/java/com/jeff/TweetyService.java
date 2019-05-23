@@ -7,8 +7,6 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -62,9 +60,13 @@ public class TweetyService {
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
         try {
-            final List<TweetyStatus> tweetyStatuses = new ArrayList<>();
-            twitter.getHomeTimeline().forEach(s -> tweetyStatuses.add(new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                                                        s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())));
+            final List<TweetyStatus> tweetyStatuses = Optional.ofNullable(twitter.getHomeTimeline())
+                    .map(List::stream)
+                    .orElse(Stream.empty())
+                    .filter(s -> Optional.ofNullable(s.getUser()).isPresent())
+                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
             return tweetyStatuses;
         } catch (TwitterException e) {
@@ -73,18 +75,22 @@ public class TweetyService {
         }
     }
 
-    public Optional<List<TweetyStatus>> filterTweets(String keyword) throws TweetyException {
+    public List<TweetyStatus> filterTweets(String keyword) throws TweetyException {
         try {
             final List<TweetyStatus> tweetyStatuses = Optional.ofNullable(twitter.getHomeTimeline())
                     .map(List::stream)
                     .orElse(Stream.empty())
                     .filter(s -> Optional.ofNullable(s.getText()).isPresent())
+                    .filter(s -> Optional.ofNullable(s.getUser()).isPresent())
                     .filter(s -> s.getText().contains(keyword))
                     .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Filtered tweets were pulled successfully.");
-            return tweetyStatuses.isEmpty() ? Optional.empty() : Optional.ofNullable(tweetyStatuses);
+            if (tweetyStatuses.isEmpty()) {
+                logger.info("No tweets containing keyword were found.");
+            }
+            return tweetyStatuses;
         } catch (TwitterException e) {
             logger.error("Filtered tweets were not pulled successfully. {}", e.getErrorMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);

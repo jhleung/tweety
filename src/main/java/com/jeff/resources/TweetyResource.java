@@ -66,8 +66,8 @@ public class TweetyResource {
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
         final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
         try {
-            Optional<List<TweetyStatus>> optionalList = tweetyService.filterTweets(keyword);
-            rb.entity(optionalList.isPresent() ? optionalList.get() : new ArrayList<TweetyStatus>());
+            final List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
+            rb.entity(tweetyStatuses);
         } catch (TweetyException e) {
             rb.status(Response.Status.INTERNAL_SERVER_ERROR);
             rb.entity(e.getMessage());
