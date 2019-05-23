@@ -6,7 +6,6 @@ import twitter4j.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static junit.framework.TestCase.assertTrue;

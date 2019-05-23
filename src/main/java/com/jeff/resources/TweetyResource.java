@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Path("/api/1.0")
 public class TweetyResource {
@@ -28,18 +26,21 @@ public class TweetyResource {
     @Path("/twitter/tweet")
     public Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
-        final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+        TweetyResponseBuilder tweetyResponseBuilder = () -> {
+            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
 
-        try {
-            rb.entity(tweetyService.publishTweet(message));
-            logger.info("Message \"{}\" published successfully", message);
-        } catch (TweetyException e) {
-            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity(e.getMessage());
-        }
+            try {
+                rb.entity(tweetyService.publishTweet(message));
+                logger.info("Message \"{}\" published successfully", message);
+            } catch (TweetyException e) {
+                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
+            }
 
+            return rb.build();
+        };
         logger.trace("Reached end of POST request to /api/1.0/twitter/tweet");
-        return rb.build();
+
+        return tweetyResponseBuilder.buildTweetyResponse();
     }
 
     @GET
@@ -47,16 +48,18 @@ public class TweetyResource {
     @Path("/twitter/timeline")
     public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
-        final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
-        try {
-            rb.entity(tweetyService.pullTweets());
-        } catch (TweetyException e) {
-            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity(e.getMessage());
-        }
+        TweetyResponseBuilder tweetyResponseBuilder = () -> {
+            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+            try {
+                rb.entity(tweetyService.pullTweets());
+            } catch (TweetyException e) {
+                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
+            }
+            return rb.build();
+        };
 
         logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
-        return rb.build();
+        return tweetyResponseBuilder.buildTweetyResponse();
     }
 
     @GET
@@ -64,16 +67,23 @@ public class TweetyResource {
     @Path("/timeline/filter")
     public Response filterTweets(@QueryParam("keyword") String keyword) {
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
-        final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
-        try {
-            final List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
-            rb.entity(tweetyStatuses);
-        } catch (TweetyException e) {
-            rb.status(Response.Status.INTERNAL_SERVER_ERROR);
-            rb.entity(e.getMessage());
-        }
+        TweetyResponseBuilder tweetyResponseBuilder = () -> {
+            final Response.ResponseBuilder rb = Response.status(Response.Status.OK);
+            try {
+                final List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
+                rb.entity(tweetyStatuses.isEmpty() ? "No results were found" : tweetyStatuses);
+            } catch (TweetyException e) {
+                rb.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage());
+            }
+            return rb.build();
+        };
 
         logger.trace("Reached end of GET request to /api/1.0/timeline/filter");
-        return rb.build();
+        return tweetyResponseBuilder.buildTweetyResponse();
+    }
+
+    interface TweetyResponseBuilder {
+        Response buildTweetyResponse();
     }
 }
+
