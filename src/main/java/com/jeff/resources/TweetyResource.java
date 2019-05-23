@@ -1,8 +1,8 @@
 package com.jeff.resources;
 
 import com.jeff.TweetyException;
-import com.jeff.TweetyService;
 import com.jeff.models.TweetyStatus;
+import com.jeff.services.TweetyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

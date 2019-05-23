@@ -1,5 +1,7 @@
-package com.jeff;
+package com.jeff.services;
 
+import com.jeff.TweetyConstantsRepository;
+import com.jeff.TweetyException;
 import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

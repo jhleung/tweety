@@ -1,6 +1,7 @@
 package com.jeff;
 
 import com.jeff.models.TweetyStatus;
+import com.jeff.services.TweetyService;
 import org.junit.Test;
 import twitter4j.Status;
 import twitter4j.Twitter;

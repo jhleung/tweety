@@ -2,6 +2,7 @@ package com.jeff;
 
 import com.jeff.models.TweetyStatus;
 import com.jeff.resources.TweetyResource;
+import com.jeff.services.TweetyService;
 import org.junit.Test;
 import twitter4j.TwitterException;
 
@@ -76,10 +77,9 @@ public class TweetyResourceTest {
         when(tweetyService.filterTweets("test")).thenReturn(new ArrayList<>());
 
         Response response = tweetyResource.filterTweets("test");
-        List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
 
         assertEquals(OK_STATUS_CODE, response.getStatus());
-        assertEquals(0, statusesResult.size());
+        assertEquals("No results were found", response.getEntity());
     }
 
     @Test
