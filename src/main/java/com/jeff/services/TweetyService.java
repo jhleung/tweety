@@ -43,11 +43,11 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                final Status status = twitter.updateStatus(message);
-                TweetyStatus tweetyStatus =  Stream.of(status).map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt())).findFirst().get();
-                logger.info("Message \"{}\" published successfully", message);
-                return tweetyStatus;
+                return Stream.of(twitter.updateStatus(message)).map(s -> {
+                    logger.info("Message \"{}\" published successfully", message);
+                    return new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
+                }).findFirst().get();
             } catch (TwitterException e) {
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
                  if (e.getErrorMessage().equals("Status is a duplicate.")) {
