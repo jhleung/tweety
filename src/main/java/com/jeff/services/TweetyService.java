@@ -11,6 +11,7 @@ import twitter4j.TwitterException;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TweetyService {
     private static TweetyService tweetyServiceInstance;
@@ -42,11 +43,11 @@ public class TweetyService {
             throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
         } else {
             try {
-                final Status s = twitter.updateStatus(message);
-                final TweetyStatus tweetyStatus = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
-                                                s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
-                logger.info("Message \"{}\" published successfully", message);
-                return tweetyStatus;
+                return Stream.of(twitter.updateStatus(message)).map(s -> {
+                    logger.info("Message \"{}\" published successfully", message);
+                    return new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
+                }).findFirst().get();
             } catch (TwitterException e) {
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
                  if (e.getErrorMessage().equals("Status is a duplicate.")) {

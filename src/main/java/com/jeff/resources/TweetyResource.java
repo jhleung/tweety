@@ -26,7 +26,7 @@ public class TweetyResource {
         tweetyService = ts;
     }
 
-    private static final TweetyResponseBuilder tweetyResponseBuilder = (s, e) -> Response.status(s).entity(e);
+    private final TweetyResponseBuilder tweetyResponseBuilder = (s, e) -> Response.status(s).entity(e);
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
