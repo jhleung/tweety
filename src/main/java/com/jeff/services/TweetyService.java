@@ -5,7 +5,6 @@ import com.jeff.TweetyException;
 import com.jeff.models.TweetyStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 

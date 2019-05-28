@@ -6,6 +6,7 @@ import com.jeff.services.TweetyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.POST;
@@ -22,6 +23,7 @@ public class TweetyResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TweetyResource.class);
 
+    @Inject
     public TweetyResource(TweetyService ts) {
         tweetyService = ts;
     }
