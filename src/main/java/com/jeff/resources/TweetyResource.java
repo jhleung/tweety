@@ -16,8 +16,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Path("/api/1.0")
 public class TweetyResource {
@@ -38,11 +38,11 @@ public class TweetyResource {
 
     @Inject
     public TweetyResource(TweetyService ts) {
-        cache = new TweetyCache();
+        cache = new TweetyCache(TimeUnit.DAYS.toMillis(1));
         tweetyService = ts;
     }
 
-    private final TweetyResponseBuilder tweetyResponseBuilder = (s, e) -> Response.status(s).entity(e).lastModified(new Date());
+    private final TweetyResponseBuilder tweetyResponseBuilder = (s, e) -> Response.status(s).entity(e);
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
