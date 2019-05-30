@@ -22,7 +22,17 @@ import java.util.List;
 @Path("/api/1.0")
 public class TweetyResource {
     private final TweetyCache cache;
+
+    private String publishedTweetSincePull, publishedTweetSinceFilter;
+
     private final TweetyService tweetyService;
+
+    private static final String PUBLISH_TWEET_SUCCESS_MSG = "SUCCESS";
+    private static final String PUBLISH_TWEET_PATH = "/twitter/tweet";
+    private static final String PULL_TWEETS_PATH = "/twitter/timeline";
+    private static final String FILTER_TWEETS_PATH = "/timeline/filter";
+    private static final String PULL_TWEETS_CACHE_KEY = "HOME_TIMELINE";
+    private static final String FILTER_TWEETS_CACHE_KEY = "FILTERED_TIMELINE";
 
     private static final Logger logger = LoggerFactory.getLogger(TweetyResource.class);
 
@@ -36,22 +46,22 @@ public class TweetyResource {
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path("/twitter/tweet")
+    @Path(PUBLISH_TWEET_PATH)
     public synchronized Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
         Response.ResponseBuilder rb;
-        if (cache.contains(message)) {
-            Response r = cache.get(message);
-            rb = tweetyResponseBuilder.buildTweetyResponse(r.getStatus(), r.getEntity());
+        if (cache.contains(message) && !cache.get(message).equals(PUBLISH_TWEET_SUCCESS_MSG)) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), cache.get(message));
         } else {
             try {
                 TweetyStatus tweetyStatus = tweetyService.publishTweet(message);
                 rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatus);
+                cache.put(message, PUBLISH_TWEET_SUCCESS_MSG);
                 logger.info("Message \"{}\" published successfully", message);
             } catch (TweetyException e) {
                 rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+                cache.put(message, e.getMessage());
             }
-            cache.put(message, rb.build());
         }
         logger.trace("Reached end of POST request to /api/1.0/twitter/tweet");
         return rb.build();
@@ -59,13 +69,13 @@ public class TweetyResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path("/twitter/timeline")
+    @Path(PULL_TWEETS_PATH)
     public synchronized Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
         Response.ResponseBuilder rb;
-        if (cache.useCachedTimeline()) {
-            final Response timeline = cache.getTimeline();
-            rb = tweetyResponseBuilder.buildTweetyResponse(timeline.getStatus(), timeline.getEntity());
+        Response r = (Response) cache.get(PULL_TWEETS_CACHE_KEY);
+        if (publishedTweetSincePull == cache.getTail() && r != null) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(r.getStatus(), r.getEntity());
         } else {
             try {
                 List<TweetyStatus> tweetyStatuses = tweetyService.pullTweets();
@@ -73,7 +83,8 @@ public class TweetyResource {
             } catch (TweetyException e) {
                 rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
             }
-            cache.setTimeline(rb.build());
+            cache.put(PULL_TWEETS_CACHE_KEY, rb.build());
+            publishedTweetSincePull = (String) cache.getTail();
         }
         logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
         return rb.build();
@@ -81,13 +92,13 @@ public class TweetyResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path("/timeline/filter")
+    @Path(FILTER_TWEETS_PATH)
     public synchronized Response filterTweets(@QueryParam("keyword") String keyword) {
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
         Response.ResponseBuilder rb;
-        if (cache.useCachedFilteredTimeline()) {
-            final Response filteredTimeline = cache.getFilteredTimeline();
-            rb = tweetyResponseBuilder.buildTweetyResponse(filteredTimeline.getStatus(), filteredTimeline.getEntity());
+        Response r = (Response) cache.get(FILTER_TWEETS_CACHE_KEY);
+        if (publishedTweetSinceFilter == cache.getTail() && r != null) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(r.getStatus(), r.getEntity());
         } else {
             try {
                 List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
@@ -98,7 +109,8 @@ public class TweetyResource {
             } catch (TweetyException e) {
                 rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
             }
-            cache.setFilteredTimeline(rb.build());
+            cache.put(FILTER_TWEETS_CACHE_KEY, rb.build());
+            publishedTweetSinceFilter = (String) cache.getTail();
         }
         logger.trace("Reached end of GET request to /api/1.0/timeline/failure");
         return rb.build();
