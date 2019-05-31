@@ -42,7 +42,7 @@ public class TweetyService {
     public TweetyStatus publishTweet(String message) throws TweetyException {
         logger.debug("Message to be published: \"{}\"", message);
         if (cache.contains(message)) {
-            throwIfInstanceOfException(cache.get(message));
+            throw (TweetyException) cache.get(message);
         }
 
         return updateStatus(message);
@@ -51,10 +51,14 @@ public class TweetyService {
     public TweetyStatus updateStatus(String message) throws TweetyException {
         if (!validateLength(message)) {
             logger.error(PUBLISH_TWEET_ERROR_MSG, message);
-            throw new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
+            cache.put(message, exception);
+            throw exception;
         } else if (message.isEmpty()) {
             logger.error(PUBLISH_TWEET_ERROR_MSG, message);
-            throw new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+            cache.put(message, exception);
+            throw exception;
         } else {
             try {
                 return Stream.of(twitter.updateStatus(message)).map(s -> {
@@ -66,21 +70,19 @@ public class TweetyService {
                 }).findFirst().get();
             } catch (TwitterException e) {
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
-                String errorMessage;
-                errorMessage = e.getErrorMessage().equals("Status is a duplicate.") ? TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG
-                                    : TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG;
-                TweetyException exception = new TweetyException(errorMessage);
-                cache.put(message, exception);
-                throw exception;
+                if (e.getErrorMessage().equals("Status is a duplicate.")) {
+                    TweetyException exception = new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
+                    cache.put(message, exception);
+                    throw exception;
+                }
+                throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
             }
         }
     }
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
         if (publishedTweetSincePull == lastPublishedTweet && cache.contains(PULL_TWEETS_CACHE_KEY)) {
-            Object value = cache.get(PULL_TWEETS_CACHE_KEY);
-            throwIfInstanceOfException(value);
-            return (List<TweetyStatus>) value;
+            return (List<TweetyStatus>) cache.get(PULL_TWEETS_CACHE_KEY);
         }
 
         return pullHomeTimeline();
@@ -99,16 +101,13 @@ public class TweetyService {
         } catch (TwitterException | NullPointerException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getMessage(), e);
             TweetyException exception = new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
-            cache.put(PULL_TWEETS_CACHE_KEY, exception);
             throw exception;
         }
     }
 
     public List<TweetyStatus> filterTweets(String keyword) throws TweetyException {
         if (publishedTweetSinceFilter == lastPublishedTweet && cache.contains(FILTER_TWEETS_CACHE_KEY)) {
-            Object value = cache.get(FILTER_TWEETS_CACHE_KEY);
-            throwIfInstanceOfException(value);
-            return (List<TweetyStatus>) value;
+            return (List<TweetyStatus>) cache.get(FILTER_TWEETS_CACHE_KEY);
         }
 
         return filterHomeTimeline(keyword);
@@ -133,12 +132,6 @@ public class TweetyService {
             TweetyException exception = new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
             cache.put(FILTER_TWEETS_CACHE_KEY, exception);
             throw exception;
-        }
-    }
-
-    private void throwIfInstanceOfException(Object value) throws TweetyException {
-        if (value instanceof TweetyException) {
-            throw (TweetyException) value;
         }
     }
 
