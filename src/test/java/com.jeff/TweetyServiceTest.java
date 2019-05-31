@@ -40,7 +40,7 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenReturn(responseList);
 
         try {
-            List<TweetyStatus> statusesResult = tweetyService.pullTweets();
+            List<TweetyStatus> statusesResult = tweetyService.pullHomeTimeline();
             assertEquals(responseList.size(), statusesResult.size());
             for (int i = 0; i < responseList.size(); i++) {
                 Status expected = responseList.get(i);
@@ -63,7 +63,7 @@ public class TweetyServiceTest {
         when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
-            tweetyService.pullTweets();
+            tweetyService.pullHomeTimeline();
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }
@@ -86,7 +86,7 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenReturn(responseList);
 
         try {
-            List<TweetyStatus> statusesResult = tweetyService.filterTweets("test");
+            List<TweetyStatus> statusesResult = tweetyService.filterHomeTimeline("test");
             assertTrue(statusesResult.isEmpty());
         } catch (TweetyException e) {
             assertFalse(false);
@@ -109,7 +109,7 @@ public class TweetyServiceTest {
 
         when(twitter.getHomeTimeline()).thenReturn(responseList);
         try {
-            List<TweetyStatus> statusesResult = tweetyService.filterTweets("st");
+            List<TweetyStatus> statusesResult = tweetyService.filterHomeTimeline("st");
             assertEquals(responseList.size(), statusesResult.size());
             for (int i = 0; i < responseList.size(); i++) {
                 Status expected = responseList.get(i);
@@ -132,7 +132,7 @@ public class TweetyServiceTest {
         when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
-            tweetyService.filterTweets("test");
+            tweetyService.filterHomeTimeline("test");
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }
@@ -154,7 +154,7 @@ public class TweetyServiceTest {
         when(twitter.updateStatus(message)).thenReturn(st);
 
         try {
-            TweetyStatus s = tweetyService.publishTweet(message);
+            TweetyStatus s = tweetyService.updateStatus(message);
             assertEquals(st.getText(), s.getMessage());
             assertEquals(st.getUser().getScreenName(), s.getHandle());
             assertEquals(st.getUser().getName(), s.getName());
@@ -178,7 +178,7 @@ public class TweetyServiceTest {
                                 "{\"text\":\"" + message + "\"}"
                         ));
         try {
-            tweetyService.publishTweet(message);
+            tweetyService.updateStatus(message);
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG, e.getMessage());
 
@@ -194,7 +194,7 @@ public class TweetyServiceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         try {
-            tweetyService.publishTweet(message);
+            tweetyService.updateStatus(message);
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, e.getMessage());
 
@@ -210,7 +210,7 @@ public class TweetyServiceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         try {
-            tweetyService.publishTweet(message);
+            tweetyService.updateStatus(message);
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG, e.getMessage());
 
@@ -226,7 +226,7 @@ public class TweetyServiceTest {
         when(twitter.updateStatus(message)).thenThrow(twitterException);
 
         try {
-            tweetyService.publishTweet(message);
+            tweetyService.updateStatus(message);
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
 

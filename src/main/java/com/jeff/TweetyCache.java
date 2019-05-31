@@ -10,9 +10,6 @@ import java.util.Set;
 public class TweetyCache {
     private HashMap<Object, Object> cache;
     private LinkedHashMap<Object, Long> createdAt;
-
-    private Object tail;
-
     private long expireTine;
 
     public TweetyCache(long time) {
@@ -28,13 +25,11 @@ public class TweetyCache {
         createdAt.put(key, System.currentTimeMillis());
         cache.put(key, value);
 
-        tail = key;
         expireCacheEntries();
     }
 
     public Object get(Object key) { return cache.get(key); }
     public boolean contains(Object key) { return cache.containsKey(key); }
-    public Object getTail() { return tail; }
 
     public void remove(Object key) {
         cache.remove(key);
