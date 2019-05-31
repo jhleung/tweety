@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
-
 public class TweetyServiceTest {
     private static Twitter twitter = mock(Twitter.class);
     private static final TweetyService tweetyService = TweetyService.getInstance(twitter);

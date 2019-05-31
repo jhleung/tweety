@@ -21,10 +21,6 @@ import java.util.List;
 public class TweetyResource {
     private final TweetyService tweetyService;
 
-    private static final String PUBLISH_TWEET_PATH = "/twitter/tweet";
-    private static final String PULL_TWEETS_PATH = "/twitter/timeline";
-    private static final String FILTER_TWEETS_PATH = "/timeline/filter";
-
 
     private static final Logger logger = LoggerFactory.getLogger(TweetyResource.class);
 
@@ -37,7 +33,7 @@ public class TweetyResource {
 
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path(PUBLISH_TWEET_PATH)
+    @Path("/twitter/tweet")
     public synchronized Response publishTweet(@FormParam("message") String message) {
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
         Response.ResponseBuilder rb;
@@ -54,7 +50,7 @@ public class TweetyResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path(PULL_TWEETS_PATH)
+    @Path("/twitter/timeline")
     public synchronized Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
         Response.ResponseBuilder rb;
@@ -70,7 +66,7 @@ public class TweetyResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path(FILTER_TWEETS_PATH)
+    @Path("/timeline/filter")
     public synchronized Response filterTweets(@QueryParam("keyword") String keyword) {
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
         Response.ResponseBuilder rb;
