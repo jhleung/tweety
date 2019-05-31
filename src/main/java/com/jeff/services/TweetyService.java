@@ -62,9 +62,7 @@ public class TweetyService {
             } catch (TwitterException e) {
                 logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
                 if (e.getErrorMessage().equals("Status is a duplicate.")) {
-                    TweetyException exception = new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
-                    cache.put(message, exception);
-                    throw exception;
+                    throw new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
                 }
                 throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
             }
