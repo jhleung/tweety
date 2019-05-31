@@ -21,7 +21,6 @@ import java.util.List;
 public class TweetyResource {
     private final TweetyService tweetyService;
 
-
     private static final Logger logger = LoggerFactory.getLogger(TweetyResource.class);
 
     @Inject

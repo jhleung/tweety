@@ -1,6 +1,5 @@
 package com.jeff;
 
-import com.jeff.services.TweetyService;
 import dagger.Module;
 import dagger.Provides;
 import twitter4j.Twitter;
@@ -31,10 +30,5 @@ public class TweetyModule {
     @Provides
     Twitter provideTwitter(Configuration c) {
         return new TwitterFactory(c).getInstance();
-    }
-
-    @Provides
-    TweetyService provideTweetyService(Twitter t) {
-        return TweetyService.getInstance(t);
     }
 }

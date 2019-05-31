@@ -9,15 +9,16 @@ import org.slf4j.LoggerFactory;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Singleton
 public class TweetyService {
     private String lastPublishedTweet, publishedTweetSincePull, publishedTweetSinceFilter;
-
-    private static TweetyService tweetyServiceInstance;
 
     private final Twitter twitter;
     private final TweetyCache cache;
@@ -27,16 +28,10 @@ public class TweetyService {
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
-    private TweetyService(Twitter t) {
+    @Inject
+    public TweetyService(Twitter t) {
         cache = new TweetyCache(TimeUnit.DAYS.toMillis(1));
         twitter = t;
-    }
-
-    public static TweetyService getInstance(Twitter t) {
-        if (tweetyServiceInstance == null) {
-            tweetyServiceInstance = new TweetyService(t);
-        }
-        return tweetyServiceInstance;
     }
 
     public TweetyStatus publishTweet(String message) throws TweetyException {
@@ -45,10 +40,6 @@ public class TweetyService {
             throw (TweetyException) cache.get(message);
         }
 
-        return updateStatus(message);
-    }
-
-    public TweetyStatus updateStatus(String message) throws TweetyException {
         if (!validateLength(message)) {
             logger.error(PUBLISH_TWEET_ERROR_MSG, message);
             TweetyException exception = new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
@@ -85,10 +76,6 @@ public class TweetyService {
             return (List<TweetyStatus>) cache.get(PULL_TWEETS_CACHE_KEY);
         }
 
-        return pullHomeTimeline();
-    }
-
-    public List<TweetyStatus> pullHomeTimeline() throws TweetyException {
         publishedTweetSincePull = lastPublishedTweet;
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
@@ -100,8 +87,7 @@ public class TweetyService {
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getMessage(), e);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
-            throw exception;
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }
 
@@ -110,10 +96,6 @@ public class TweetyService {
             return (List<TweetyStatus>) cache.get(FILTER_TWEETS_CACHE_KEY);
         }
 
-        return filterHomeTimeline(keyword);
-    }
-
-    public List<TweetyStatus> filterHomeTimeline(String keyword) throws TweetyException {
         publishedTweetSinceFilter = lastPublishedTweet;
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
@@ -129,9 +111,7 @@ public class TweetyService {
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
             logger.error("Filtered tweets were not pulled successfully. {}", e.getMessage(), e);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
-            cache.put(FILTER_TWEETS_CACHE_KEY, exception);
-            throw exception;
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }
 
