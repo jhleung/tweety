@@ -1,5 +1,6 @@
 package com.jeff.resources;
 
+import com.jeff.TweetyConstantsRepository;
 import com.jeff.TweetyException;
 import com.jeff.models.TweetyStatus;
 import com.jeff.services.TweetyService;
@@ -67,8 +68,12 @@ public class TweetyResource {
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/timeline/filter")
     public synchronized Response filterTweets(@QueryParam("keyword") String keyword) {
+        if (keyword == null)
+            return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_KEYWORD_ERROR_MSG).build();
+
         logger.trace("/api/1.0/timeline/filter endpoint hit with GET request. Attempting to pull home timeline and apply filter...");
         Response.ResponseBuilder rb;
+
         try {
             List<TweetyStatus> tweetyStatuses = tweetyService.filterTweets(keyword);
             if (tweetyStatuses.isEmpty())
