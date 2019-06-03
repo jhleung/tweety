@@ -91,6 +91,9 @@ public class TweetyService {
     }
 
     public List<TweetyStatus> filterTweets(String keyword) throws TweetyException {
+        if (keyword.isEmpty())
+            throw new TweetyException(TweetyConstantsRepository.EMPTY_KEYWORD_ERROR_MSG);
+
         String key = FILTER_TWEETS_KEY_PREFIX + keyword;
         String lastTweetSinceFilterKey = TWEET_SINCE_FILTER_KEY_PREFIX + keyword;
         if (cache.contains(lastTweetSinceFilterKey) && cache.get(lastTweetSinceFilterKey) == lastPublishedTweet && cache.contains(key)) {
