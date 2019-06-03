@@ -54,7 +54,7 @@ public class TweetyResource {
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/timeline")
-    public synchronized Response pullTweets() {
+    public Response pullTweets() {
         logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
         Response.ResponseBuilder rb;
         try {
@@ -70,7 +70,7 @@ public class TweetyResource {
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/timeline/filter")
-    public synchronized Response filterTweets(@QueryParam("keyword") String keyword) {
+    public Response filterTweets(@QueryParam("keyword") String keyword) {
         if (keyword == null)
             return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_KEYWORD_ERROR_MSG).build();
 

@@ -11,6 +11,8 @@ import twitter4j.TwitterException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -18,13 +20,13 @@ import java.util.stream.Stream;
 
 @Singleton
 public class TweetyService {
-    private String lastPublishedTweet, publishedTweetSincePull, publishedTweetSinceFilter;
+    private String lastPublishedTweet;
 
     private final Twitter twitter;
     private final TweetyCache cache;
 
     private static final String PULL_TWEETS_KEY = "HOME_TIMELINE";
-    private static final String FILTER_TWEETS_KEY_PREFIX = "FILTERED_TIMELINE";
+    private static final String FILTER_TWEETS_KEY = "FILTERED_TIMELINE";
     private static final String TWEET_SINCE_FILTER_KEY_PREFIX = "LAST_TWEET_SINCE_FILTER";
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
@@ -58,6 +60,8 @@ public class TweetyService {
                     TweetyStatus ts = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
                     lastPublishedTweet = message;
+                    cache.remove(PULL_TWEETS_KEY);
+                    cache.remove(FILTER_TWEETS_KEY);
                     return ts;
                 }).findFirst().get();
             } catch (TwitterException e) {
@@ -71,11 +75,10 @@ public class TweetyService {
     }
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
-        if (publishedTweetSincePull == lastPublishedTweet && cache.contains(PULL_TWEETS_KEY)) {
+        if (cache.contains(PULL_TWEETS_KEY)) {
             return (List<TweetyStatus>) cache.get(PULL_TWEETS_KEY);
         }
 
-        publishedTweetSincePull = lastPublishedTweet;
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
@@ -94,13 +97,12 @@ public class TweetyService {
         if (keyword.isEmpty())
             throw new TweetyException(TweetyConstantsRepository.EMPTY_KEYWORD_ERROR_MSG);
 
-        String key = FILTER_TWEETS_KEY_PREFIX + keyword;
-        String lastTweetSinceFilterKey = TWEET_SINCE_FILTER_KEY_PREFIX + keyword;
-        if (cache.contains(lastTweetSinceFilterKey) && cache.get(lastTweetSinceFilterKey) == lastPublishedTweet && cache.contains(key)) {
-            return (List<TweetyStatus>) cache.get(key);
+        if (cache.contains(FILTER_TWEETS_KEY)) {
+            HashMap<String, List<TweetyStatus>> map = (HashMap) cache.get(FILTER_TWEETS_KEY);
+            if (map.containsKey(keyword))
+                return map.get(keyword);
         }
 
-        cache.put(lastTweetSinceFilterKey, lastPublishedTweet);
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .filter(s -> s.getText().contains(keyword))
@@ -111,7 +113,11 @@ public class TweetyService {
             if (tweetyStatuses.isEmpty()) {
                 logger.info("No tweets containing keyword were found.");
             }
-            cache.put(key, tweetyStatuses);
+            HashMap<String, List<TweetyStatus>> map = (HashMap) cache.getOrDefault(FILTER_TWEETS_KEY, new HashMap<String, List<TweetyStatus>>());
+            List<TweetyStatus> statuses = map.getOrDefault(keyword, new ArrayList<>());
+            statuses.addAll(tweetyStatuses);
+            map.put(keyword, statuses);
+            cache.put(FILTER_TWEETS_KEY,  map);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
             logger.error("Filtered tweets were not pulled successfully. {}", e.getMessage(), e);

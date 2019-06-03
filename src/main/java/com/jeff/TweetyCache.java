@@ -28,6 +28,8 @@ public class TweetyCache {
     }
 
     public Object get(Object key) { return cache.get(key); }
+    public Object getOrDefault(Object key, Object defaultValue) { return cache.getOrDefault(key, defaultValue); }
+
     public boolean contains(Object key) { return cache.containsKey(key); }
 
     public void remove(Object key) {
