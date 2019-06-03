@@ -11,7 +11,6 @@ import twitter4j.TwitterException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -20,14 +19,12 @@ import java.util.stream.Stream;
 
 @Singleton
 public class TweetyService {
-    private String lastPublishedTweet;
 
     private final Twitter twitter;
     private final TweetyCache cache;
 
     private static final String PULL_TWEETS_KEY = "HOME_TIMELINE";
     private static final String FILTER_TWEETS_KEY = "FILTERED_TIMELINE";
-    private static final String TWEET_SINCE_FILTER_KEY_PREFIX = "LAST_TWEET_SINCE_FILTER";
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
@@ -59,7 +56,6 @@ public class TweetyService {
                     logger.info("Message \"{}\" published successfully", message);
                     TweetyStatus ts = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
-                    lastPublishedTweet = message;
                     cache.remove(PULL_TWEETS_KEY);
                     cache.remove(FILTER_TWEETS_KEY);
                     return ts;
@@ -114,9 +110,7 @@ public class TweetyService {
                 logger.info("No tweets containing keyword were found.");
             }
             HashMap<String, List<TweetyStatus>> map = (HashMap) cache.getOrDefault(FILTER_TWEETS_KEY, new HashMap<String, List<TweetyStatus>>());
-            List<TweetyStatus> statuses = map.getOrDefault(keyword, new ArrayList<>());
-            statuses.addAll(tweetyStatuses);
-            map.put(keyword, statuses);
+            map.put(keyword, tweetyStatuses);
             cache.put(FILTER_TWEETS_KEY,  map);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
