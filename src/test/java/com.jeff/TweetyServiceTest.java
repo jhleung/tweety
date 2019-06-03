@@ -19,13 +19,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.*;
 
-
 public class TweetyServiceTest {
     private static Twitter twitter = mock(Twitter.class);
-    private static final TweetyService tweetyService = TweetyService.getInstance(twitter);
 
     @Test
     public void testPullTimelineSuccess() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
                 "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
         Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
@@ -59,6 +58,7 @@ public class TweetyServiceTest {
 
     @Test
     public void testPullTimelineFailure() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
@@ -72,6 +72,7 @@ public class TweetyServiceTest {
 
     @Test
     public void filterTweetsSuccessNoMatches() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
                 "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
         Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
@@ -96,6 +97,7 @@ public class TweetyServiceTest {
 
     @Test
     public void filterTweetsSuccessMatchesFound() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
                 "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
         Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
@@ -128,6 +130,7 @@ public class TweetyServiceTest {
 
     @Test
     public void filterTweetsFailure() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
@@ -141,6 +144,7 @@ public class TweetyServiceTest {
 
     @Test
     public void testPublishTweetSuccess() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
 
         Status st = mock(Status.class);
@@ -168,6 +172,7 @@ public class TweetyServiceTest {
 
     @Test
     public void testPublishTweetExceedMaxLength() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         StringBuilder sb = new StringBuilder("");
         IntStream.range(0, TweetyConstantsRepository.MAX_TWEET_LENGTH + 1).forEach(i -> sb.append("x"));
         String message = sb.toString();
@@ -188,6 +193,7 @@ public class TweetyServiceTest {
 
     @Test
     public void testPublishEmptyTweet() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         String message = "";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("test");
@@ -203,7 +209,8 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testPublishDuplicateTweet() throws TwitterException{
+    public void testPublishDuplicateTweet() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         String message = "duplicateStatus";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Status is a duplicate.");
@@ -219,7 +226,8 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testPublishTweetGenericException() throws TwitterException{
+    public void testPublishTweetGenericException() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
         String message = "message";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");

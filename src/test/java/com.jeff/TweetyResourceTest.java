@@ -17,16 +17,15 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 public class TweetyResourceTest {
     private static final TweetyService tweetyService = mock(TweetyService.class);
-    private static final TweetyResource tweetyResource = new TweetyResource(tweetyService);
 
     private static final int OK_STATUS_CODE = Response.Status.OK.getStatusCode();
     private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Test
     public void testPullTimelineSuccess() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
         TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
         TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
@@ -56,6 +55,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPullTimelineFailure() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         when(tweetyService.pullTweets()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
         Response response = tweetyResource.pullTweets();
@@ -65,6 +65,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testFilterTweetsSuccessNoMatch() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
         TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
         TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
@@ -84,6 +85,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testFilterTweetsSuccessMatchFound() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
         TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
         TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
@@ -113,6 +115,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testFilterTweetsFailure() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         when(tweetyService.filterTweets("test")).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
         Response response = tweetyResource.filterTweets("test");
@@ -122,6 +125,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishTweetSuccess() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "value12";
         TweetyStatus st = mockTweetyStatus(message, "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
 
@@ -140,6 +144,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishTweetExceedMaxLength() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         StringBuilder sb = new StringBuilder("");
         IntStream.range(0, TweetyConstantsRepository.MAX_TWEET_LENGTH + 1).forEach(i -> sb.append("x"));
         String message = sb.toString();
@@ -153,6 +158,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishEmptyTweet() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "";
         when(tweetyService.publishTweet(message)).thenThrow(new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG));
 
@@ -163,6 +169,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishDuplicateTweet() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "duplicateStatus";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Status is a duplicate.");
@@ -175,6 +182,7 @@ public class TweetyResourceTest {
 
     @Test
     public void testPublishTweetGenericException() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "message";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
