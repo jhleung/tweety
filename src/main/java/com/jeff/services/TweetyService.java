@@ -23,8 +23,9 @@ public class TweetyService {
     private final Twitter twitter;
     private final TweetyCache cache;
 
-    private static final String PULL_TWEETS_CACHE_KEY = "HOME_TIMELINE";
-    private static final String FILTER_TWEETS_CACHE_KEY = "FILTERED_TIMELINE";
+    private static final String PULL_TWEETS_KEY = "HOME_TIMELINE";
+    private static final String FILTER_TWEETS_KEY_PREFIX = "FILTERED_TIMELINE";
+    private static final String TWEET_SINCE_FILTER_KEY_PREFIX = "LAST_TWEET_SINCE_FILTER";
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
@@ -70,8 +71,8 @@ public class TweetyService {
     }
 
     public List<TweetyStatus> pullTweets() throws TweetyException {
-        if (publishedTweetSincePull == lastPublishedTweet && cache.contains(PULL_TWEETS_CACHE_KEY)) {
-            return (List<TweetyStatus>) cache.get(PULL_TWEETS_CACHE_KEY);
+        if (publishedTweetSincePull == lastPublishedTweet && cache.contains(PULL_TWEETS_KEY)) {
+            return (List<TweetyStatus>) cache.get(PULL_TWEETS_KEY);
         }
 
         publishedTweetSincePull = lastPublishedTweet;
@@ -81,7 +82,7 @@ public class TweetyService {
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
-            cache.put(PULL_TWEETS_CACHE_KEY, tweetyStatuses);
+            cache.put(PULL_TWEETS_KEY, tweetyStatuses);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
             logger.error("Timeline was not pulled successfully. {}", e.getMessage(), e);
@@ -90,11 +91,13 @@ public class TweetyService {
     }
 
     public List<TweetyStatus> filterTweets(String keyword) throws TweetyException {
-        if (publishedTweetSinceFilter == lastPublishedTweet && cache.contains(FILTER_TWEETS_CACHE_KEY)) {
-            return (List<TweetyStatus>) cache.get(FILTER_TWEETS_CACHE_KEY);
+        String key = FILTER_TWEETS_KEY_PREFIX + keyword;
+        String lastTweetSinceFilterKey = TWEET_SINCE_FILTER_KEY_PREFIX + keyword;
+        if (cache.contains(lastTweetSinceFilterKey) && cache.get(lastTweetSinceFilterKey) == lastPublishedTweet && cache.contains(key)) {
+            return (List<TweetyStatus>) cache.get(key);
         }
 
-        publishedTweetSinceFilter = lastPublishedTweet;
+        cache.put(lastTweetSinceFilterKey, lastPublishedTweet);
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .filter(s -> s.getText().contains(keyword))
@@ -105,7 +108,7 @@ public class TweetyService {
             if (tweetyStatuses.isEmpty()) {
                 logger.info("No tweets containing keyword were found.");
             }
-            cache.put(FILTER_TWEETS_CACHE_KEY, tweetyStatuses);
+            cache.put(key, tweetyStatuses);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
             logger.error("Filtered tweets were not pulled successfully. {}", e.getMessage(), e);
