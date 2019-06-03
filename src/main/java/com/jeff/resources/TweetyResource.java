@@ -35,6 +35,9 @@ public class TweetyResource {
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/tweet")
     public synchronized Response publishTweet(@FormParam("message") String message) {
+        if (message == null)
+            return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_STATUS_ERROR_MSG).build();
+
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
         Response.ResponseBuilder rb;
         try {
