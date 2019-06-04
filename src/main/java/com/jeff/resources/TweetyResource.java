@@ -60,6 +60,7 @@ public class TweetyResource {
         try {
             List<TweetyStatus> tweetyStatuses = tweetyService.pullTweets();
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatuses);
+            rb.header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET");
         } catch (TweetyException e) {
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
         }
