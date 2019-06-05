@@ -63,6 +63,7 @@ public class TweetyResource {
         } catch (TweetyException e) {
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
         }
+        rb.header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET");
         logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
         return rb.build();
     }
