@@ -1,6 +1,7 @@
 package com.jeff;
 
 import com.jeff.models.TweetyStatus;
+import com.jeff.models.TweetyUser;
 import com.jeff.resources.TweetyResource;
 import com.jeff.services.TweetyService;
 import org.junit.Test;
@@ -46,9 +47,9 @@ public class TweetyResourceTest {
             TweetyStatus expected = responseList.get(i);
             TweetyStatus actual = statusesResult.get(i);
             assertEquals(expected.getMessage(), actual.getMessage());
-            assertEquals(expected.getHandle(), actual.getHandle());
-            assertEquals(expected.getName(), actual.getName());
-            assertEquals(expected.getProfileImageUrl(), actual.getProfileImageUrl());
+            assertEquals(expected.getUser().getHandle(), actual.getUser().getHandle());
+            assertEquals(expected.getUser().getName(), actual.getUser().getName());
+            assertEquals(expected.getUser().getProfileImageUrl(), actual.getUser().getProfileImageUrl());
             assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
         }
     }
@@ -106,9 +107,9 @@ public class TweetyResourceTest {
             TweetyStatus expected = responseList.get(i);
             TweetyStatus actual = statusesResult.get(i);
             assertEquals(expected.getMessage(), actual.getMessage());
-            assertEquals(expected.getHandle(), actual.getHandle());
-            assertEquals(expected.getName(), actual.getName());
-            assertEquals(expected.getProfileImageUrl(), actual.getProfileImageUrl());
+            assertEquals(expected.getUser().getHandle(), actual.getUser().getHandle());
+            assertEquals(expected.getUser().getName(), actual.getUser().getName());
+            assertEquals(expected.getUser().getProfileImageUrl(), actual.getUser().getProfileImageUrl());
             assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
         }
     }
@@ -136,9 +137,9 @@ public class TweetyResourceTest {
 
         TweetyStatus tweetyStatus = (TweetyStatus) response.getEntity();
         assertEquals(st.getMessage(), tweetyStatus.getMessage());
-        assertEquals(st.getHandle(), tweetyStatus.getHandle());
-        assertEquals(st.getName(), tweetyStatus.getName());
-        assertEquals(st.getProfileImageUrl(), tweetyStatus.getProfileImageUrl());
+        assertEquals(st.getUser().getHandle(), tweetyStatus.getUser().getHandle());
+        assertEquals(st.getUser().getName(), tweetyStatus.getUser().getName());
+        assertEquals(st.getUser().getProfileImageUrl(), tweetyStatus.getUser().getProfileImageUrl());
         assertEquals(st.getCreatedAt(), tweetyStatus.getCreatedAt());
     }
 
@@ -196,9 +197,11 @@ public class TweetyResourceTest {
     private TweetyStatus mockTweetyStatus(String message, String handle, String name, String profileImageUrl, Date createdAt) {
         TweetyStatus st =  mock(TweetyStatus.class);
         when(st.getMessage()).thenReturn(message);
-        when(st.getHandle()).thenReturn(handle);
-        when(st.getName()).thenReturn(name);
-        when(st.getProfileImageUrl()).thenReturn(profileImageUrl);
+        TweetyUser u = mock(TweetyUser.class);
+        when(st.getUser()).thenReturn(u);
+        when(u.getHandle()).thenReturn(handle);
+        when(u.getName()).thenReturn(name);
+        when(u.getProfileImageUrl()).thenReturn(profileImageUrl);
         when(st.getCreatedAt()).thenReturn(createdAt);
         return st;
     }
