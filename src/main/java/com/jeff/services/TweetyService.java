@@ -54,7 +54,7 @@ public class TweetyService {
             try {
                 return Stream.of(twitter.updateStatus(message)).map(s -> {
                     logger.info("Message \"{}\" published successfully", message);
-                    TweetyStatus ts = new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                    TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
                     cache.remove(PULL_TWEETS_KEY);
                     cache.remove(FILTER_TWEETS_KEY);
@@ -77,7 +77,7 @@ public class TweetyService {
 
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
-                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
@@ -102,7 +102,7 @@ public class TweetyService {
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .filter(s -> s.getText().contains(keyword))
-                    .map(s -> new TweetyStatus(s.getText(), s.getUser().getScreenName(),
+                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Filtered tweets were pulled successfully.");
