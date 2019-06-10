@@ -4,6 +4,7 @@ import com.jeff.TweetyCache;
 import com.jeff.TweetyConstantsRepository;
 import com.jeff.TweetyException;
 import com.jeff.models.TweetyStatus;
+import com.jeff.models.TweetyUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.Twitter;
@@ -54,8 +55,8 @@ public class TweetyService {
             try {
                 return Stream.of(twitter.updateStatus(message)).map(s -> {
                     logger.info("Message \"{}\" published successfully", message);
-                    TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt());
+                    TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt());
                     cache.remove(PULL_TWEETS_KEY);
                     cache.remove(FILTER_TWEETS_KEY);
                     return ts;
@@ -77,8 +78,8 @@ public class TweetyService {
 
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
-                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
             cache.put(PULL_TWEETS_KEY, tweetyStatuses);
@@ -102,8 +103,8 @@ public class TweetyService {
         try {
             final List<TweetyStatus> tweetyStatuses = twitter.getHomeTimeline().stream()
                     .filter(s -> s.getText().contains(keyword))
-                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps(), s.getCreatedAt()))
+                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Filtered tweets were pulled successfully.");
             if (tweetyStatuses.isEmpty()) {

@@ -45,9 +45,9 @@ public class TweetyServiceTest {
                 Status expected = responseList.get(i);
                 TweetyStatus actual = statusesResult.get(i);
                 assertEquals(expected.getText(), actual.getMessage());
-                assertEquals(expected.getUser().getScreenName(), actual.getHandle());
-                assertEquals(expected.getUser().getName(), actual.getName());
-                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getProfileImageUrl());
+                assertEquals(expected.getUser().getScreenName(), actual.getUser().getHandle());
+                assertEquals(expected.getUser().getName(), actual.getUser().getName());
+                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getUser().getProfileImageUrl());
                 assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
             }
         } catch (TweetyException e) {
@@ -117,9 +117,9 @@ public class TweetyServiceTest {
                 Status expected = responseList.get(i);
                 TweetyStatus actual = statusesResult.get(i);
                 assertEquals(expected.getText(), actual.getMessage());
-                assertEquals(expected.getUser().getScreenName(), actual.getHandle());
-                assertEquals(expected.getUser().getName(), actual.getName());
-                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getProfileImageUrl());
+                assertEquals(expected.getUser().getScreenName(), actual.getUser().getHandle());
+                assertEquals(expected.getUser().getName(), actual.getUser().getName());
+                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getUser().getProfileImageUrl());
                 assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
             }
         } catch (TweetyException e) {
@@ -160,9 +160,9 @@ public class TweetyServiceTest {
         try {
             TweetyStatus s = tweetyService.publishTweet(message);
             assertEquals(st.getText(), s.getMessage());
-            assertEquals(st.getUser().getScreenName(), s.getHandle());
-            assertEquals(st.getUser().getName(), s.getName());
-            assertEquals(st.getUser().getProfileImageURLHttps(), s.getProfileImageUrl());
+            assertEquals(st.getUser().getScreenName(), s.getUser().getHandle());
+            assertEquals(st.getUser().getName(), s.getUser().getName());
+            assertEquals(st.getUser().getProfileImageURLHttps(), s.getUser().getProfileImageUrl());
             assertEquals(st.getCreatedAt(), s.getCreatedAt());
         } catch (TweetyException e) {
             assertFalse(false);

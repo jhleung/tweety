@@ -5,24 +5,18 @@ import java.util.Date;
 public class TweetyStatus {
     private String id;
     private String message;
-    private String handle;
-    private String name;
-    private String profileImageUrl;
+    private TweetyUser user;
     private Date createdAt;
 
-    public TweetyStatus(String i, String m, String h, String n, String p, Date c) {
+    public TweetyStatus(String i, String m, TweetyUser u, Date c) {
         id = i;
         message = m;
-        handle = h;
-        name = n;
-        profileImageUrl = p;
+        user = u;
         createdAt = c;
     }
 
     public String getId() { return id; }
     public String getMessage() { return message; }
-    public String getHandle() { return handle; }
-    public String getName() { return name; }
-    public String getProfileImageUrl() { return profileImageUrl; }
+    public TweetyUser getUser() { return user; }
     public Date getCreatedAt() { return createdAt; }
 }
