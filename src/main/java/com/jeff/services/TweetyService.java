@@ -24,7 +24,8 @@ public class TweetyService {
     private final Twitter twitter;
     private final TweetyCache cache;
 
-    private static final String PULL_TWEETS_KEY = "HOME_TIMELINE";
+    private static final String PULL_HOME_TIMELINE_KEY = "HOME_TIMELINE";
+    private static final String PULL_USER_TIMELINE_KEY = "USER_TIMELINE";
     private static final String FILTER_TWEETS_KEY = "FILTERED_TIMELINE";
     private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
@@ -57,7 +58,7 @@ public class TweetyService {
                     logger.info("Message \"{}\" published successfully", message);
                     TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt());
-                    cache.remove(PULL_TWEETS_KEY);
+                    cache.remove(PULL_HOME_TIMELINE_KEY);
                     cache.remove(FILTER_TWEETS_KEY);
                     return ts;
                 }).findFirst().get();
@@ -71,9 +72,9 @@ public class TweetyService {
         }
     }
 
-    public List<TweetyStatus> pullTweets() throws TweetyException {
-        if (cache.contains(PULL_TWEETS_KEY)) {
-            return (List<TweetyStatus>) cache.get(PULL_TWEETS_KEY);
+    public List<TweetyStatus> pullHomeTimeline() throws TweetyException {
+        if (cache.contains(PULL_HOME_TIMELINE_KEY)) {
+            return (List<TweetyStatus>) cache.get(PULL_HOME_TIMELINE_KEY);
         }
 
         try {
@@ -82,10 +83,30 @@ public class TweetyService {
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
                     .collect(Collectors.toList());
             logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
-            cache.put(PULL_TWEETS_KEY, tweetyStatuses);
+            cache.put(PULL_HOME_TIMELINE_KEY, tweetyStatuses);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
-            logger.error("Timeline was not pulled successfully. {}", e.getMessage(), e);
+            logger.error("Home timeline was not pulled successfully. {}", e.getMessage(), e);
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+        }
+    }
+
+
+    public List<TweetyStatus> pullUserTimeline() throws TweetyException {
+        if (cache.contains(PULL_USER_TIMELINE_KEY)) {
+            return (List<TweetyStatus>) cache.get(PULL_USER_TIMELINE_KEY);
+        }
+
+        try {
+            final List<TweetyStatus> tweetyStatuses = twitter.getUserTimeline().stream()
+                    .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
+                            s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
+                    .collect(Collectors.toList());
+            logger.info("User timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
+            cache.put(PULL_USER_TIMELINE_KEY, tweetyStatuses);
+            return tweetyStatuses;
+        } catch (TwitterException | NullPointerException e) {
+            logger.error("User timeline was not pulled successfully. {}", e.getMessage(), e);
             throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
     }
