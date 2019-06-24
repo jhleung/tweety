@@ -82,7 +82,7 @@ public class TweetyService {
                     .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
                     .collect(Collectors.toList());
-            logger.info("Home timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
+            logger.info("Home timeline pulled successfully. See log timestamp to see what date the home timeline was pulled.");
             cache.put(PULL_HOME_TIMELINE_KEY, tweetyStatuses);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {
@@ -102,7 +102,7 @@ public class TweetyService {
                     .map(s -> new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt()))
                     .collect(Collectors.toList());
-            logger.info("User timeline pulled successfully. See log timestamp to see what date the timeline was pulled.");
+            logger.info("User timeline pulled successfully. See log timestamp to see what date the user timeline was pulled.");
             cache.put(PULL_USER_TIMELINE_KEY, tweetyStatuses);
             return tweetyStatuses;
         } catch (TwitterException | NullPointerException e) {

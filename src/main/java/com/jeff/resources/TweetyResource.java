@@ -55,7 +55,7 @@ public class TweetyResource {
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/homeTimeline")
     public Response pullHomeTimeline() {
-        logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
+        logger.trace("/api/1.0/twitter/homeTimeline endpoint hit with GET request. Attempting to pull home timeline...");
         Response.ResponseBuilder rb;
         try {
             List<TweetyStatus> tweetyStatuses = tweetyService.pullHomeTimeline();
@@ -72,7 +72,7 @@ public class TweetyResource {
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/userTimeline")
     public Response pullUserTimeline() {
-        logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull user timeline...");
+        logger.trace("/api/1.0/twitter/userTimeline endpoint hit with GET request. Attempting to pull user timeline...");
         Response.ResponseBuilder rb;
         try {
             List<TweetyStatus> tweetyStatuses = tweetyService.pullUserTimeline();
