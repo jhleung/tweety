@@ -59,6 +59,7 @@ public class TweetyService {
                     TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
                             s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt());
                     cache.remove(PULL_HOME_TIMELINE_KEY);
+                    cache.remove(PULL_USER_TIMELINE_KEY);
                     cache.remove(FILTER_TWEETS_KEY);
                     return ts;
                 }).findFirst().get();
