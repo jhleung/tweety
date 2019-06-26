@@ -99,7 +99,7 @@
         <jacoco-version>0.8.4</jacoco-version>
         <slf4j-version>1.7.26</slf4j-version>
         <dagger-version>2.16</dagger-version>
-        <jetty-version>8.1.10.v20130312</jetty-version>
+        <jetty-version>9.4.19.v20190610</jetty-version>
     </properties>
 
     <dependencies>
