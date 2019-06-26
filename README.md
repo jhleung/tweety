@@ -38,9 +38,13 @@ Publish Tweet:
   
    curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet
   
-Pull Tweet:
+Pull Home Timeline:
   
-   curl http://localhost:8080/api/1.0/twitter/timeline
+   curl http://localhost:8080/api/1.0/twitter/homeTimeline
+
+Pull User Timeline:
+
+  curl http://localhost:8080/api/1.0/twitter/userTimeline
 
 Filter Tweet:
 	curl http://localhost:8080/api/1.0/timeline/filter?keyword=<keyword>

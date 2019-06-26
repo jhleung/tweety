@@ -40,6 +40,7 @@ public class TweetyResource {
 
         logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
         Response.ResponseBuilder rb;
+
         try {
             TweetyStatus tweetyStatus = tweetyService.publishTweet(message);
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatus);
@@ -53,24 +54,39 @@ public class TweetyResource {
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path("/twitter/timeline")
-    public Response pullTweets() {
-        logger.trace("/api/1.0/twitter/timeline endpoint hit with GET request. Attempting to pull home timeline...");
+    @Path("/twitter/homeTimeline")
+    public Response pullHomeTimeline() {
+        logger.trace("/api/1.0/twitter/homeTimeline endpoint hit with GET request. Attempting to pull home timeline...");
         Response.ResponseBuilder rb;
         try {
-            List<TweetyStatus> tweetyStatuses = tweetyService.pullTweets();
+            List<TweetyStatus> tweetyStatuses = tweetyService.pullHomeTimeline();
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatuses);
         } catch (TweetyException e) {
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
         }
-        rb.header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET");
-        logger.trace("Reached end of GET request to /api/1.0/twitter/timeline");
+        logger.trace("Reached end of GET request to /api/1.0/twitter/homeTimeline");
         return rb.build();
     }
 
     @GET
     @Produces({ MediaType.APPLICATION_JSON })
-    @Path("/timeline/filter")
+    @Path("/twitter/userTimeline")
+    public Response pullUserTimeline() {
+        logger.trace("/api/1.0/twitter/userTimeline endpoint hit with GET request. Attempting to pull user timeline...");
+        Response.ResponseBuilder rb;
+        try {
+            List<TweetyStatus> tweetyStatuses = tweetyService.pullUserTimeline();
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatuses);
+        } catch (TweetyException e) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        }
+        logger.trace("Reached end of GET request to /api/1.0/twitter/userTimeline");
+        return rb.build();
+    }
+
+    @GET
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("/homeTimeline/filter")
     public Response filterTweets(@QueryParam("keyword") String keyword) {
         if (keyword == null)
             return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_KEYWORD_ERROR_MSG).build();

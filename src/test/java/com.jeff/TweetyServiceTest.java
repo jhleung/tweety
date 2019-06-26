@@ -23,7 +23,7 @@ public class TweetyServiceTest {
     private static Twitter twitter = mock(Twitter.class);
 
     @Test
-    public void testPullTimelineSuccess() throws TwitterException {
+    public void testPullHomeTimelineSuccess() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
                 "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
@@ -39,7 +39,7 @@ public class TweetyServiceTest {
         when(twitter.getHomeTimeline()).thenReturn(responseList);
 
         try {
-            List<TweetyStatus> statusesResult = tweetyService.pullTweets();
+            List<TweetyStatus> statusesResult = tweetyService.pullHomeTimeline();
             assertEquals(responseList.size(), statusesResult.size());
             for (int i = 0; i < responseList.size(); i++) {
                 Status expected = responseList.get(i);
@@ -57,13 +57,61 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testPullTimelineFailure() throws TwitterException {
+    public void testPullHomeTimelineFailure() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("test");
         when(twitter.getHomeTimeline()).thenThrow(twitterException);
         try {
-            tweetyService.pullTweets();
+            tweetyService.pullHomeTimeline();
+        } catch (TweetyException e) {
+            assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
+        }
+        reset(twitter);
+    }
+
+    @Test
+    public void testPullUserTimelineSuccess() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
+        Status st1 = TwitterObjectFactory.createStatus("{\"text\":\"st1\", \"createdAt\":1558379453000," +
+                "\"user\":{\"name\":\"sthandle1\", \"screenName\":\"test1\", \"profileImageURLHttps\":\"https://test1.com\"}}");
+        Status st2 = TwitterObjectFactory.createStatus("{\"text\":\"st2\", \"createdAt\":1558379453001, " +
+                "\"user\":{\"name\":\"sthandle2\", \"screenName\":\"test2\", \"profileImageURLHttps\":\"https://test2.com\"}}");
+        Status st3 = TwitterObjectFactory.createStatus("{\"text\":\"st3\", \"createdAt\":1558379453002, " +
+                "\"user\":{\"name\":\"sthandle3\", \"screenName\":\"test3\", \"profileImageURLHttps\":\"https:..test3.com\"}}");
+        ResponseList<Status> responseList = new MyResponseList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(twitter.getUserTimeline()).thenReturn(responseList);
+
+        try {
+            List<TweetyStatus> statusesResult = tweetyService.pullHomeTimeline();
+            assertEquals(responseList.size(), statusesResult.size());
+            for (int i = 0; i < responseList.size(); i++) {
+                Status expected = responseList.get(i);
+                TweetyStatus actual = statusesResult.get(i);
+                assertEquals(expected.getText(), actual.getMessage());
+                assertEquals(expected.getUser().getScreenName(), actual.getUser().getHandle());
+                assertEquals(expected.getUser().getName(), actual.getUser().getName());
+                assertEquals(expected.getUser().getProfileImageURLHttps(), actual.getUser().getProfileImageUrl());
+                assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+            }
+        } catch (TweetyException e) {
+            assertFalse(false);
+        }
+        reset(twitter);
+    }
+
+    @Test
+    public void testPullUserTimelineFailure() throws TwitterException {
+        TweetyService tweetyService = new TweetyService(twitter);
+        TwitterException twitterException = mock(TwitterException.class);
+        when(twitterException.getErrorMessage()).thenReturn("test");
+        when(twitter.getUserTimeline()).thenThrow(twitterException);
+        try {
+            tweetyService.pullHomeTimeline();
         } catch (TweetyException e) {
             assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
         }

@@ -25,7 +25,7 @@ public class TweetyResourceTest {
     private static final int INTERNAL_SERVER_ERROR_STATUS_CODE = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
     @Test
-    public void testPullTimelineSuccess() throws TweetyException {
+    public void testPullHomeTimelineSuccess() throws TweetyException {
         TweetyResource tweetyResource = new TweetyResource(tweetyService);
         TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
         TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
@@ -36,9 +36,9 @@ public class TweetyResourceTest {
         responseList.add(st2);
         responseList.add(st3);
 
-        when(tweetyService.pullTweets()).thenReturn(responseList);
+        when(tweetyService.pullHomeTimeline()).thenReturn(responseList);
 
-        Response response = tweetyResource.pullTweets();
+        Response response = tweetyResource.pullHomeTimeline();
         List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
 
         assertEquals(OK_STATUS_CODE, response.getStatus());
@@ -55,11 +55,52 @@ public class TweetyResourceTest {
     }
 
     @Test
-    public void testPullTimelineFailure() throws TweetyException {
+    public void testPullHomeTimelineFailure() throws TweetyException {
         TweetyResource tweetyResource = new TweetyResource(tweetyService);
-        when(tweetyService.pullTweets()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
+        when(tweetyService.pullHomeTimeline()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
 
-        Response response = tweetyResource.pullTweets();
+        Response response = tweetyResource.pullHomeTimeline();
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
+        assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
+    }
+
+
+    @Test
+    public void testPullUserTimelineSuccess() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
+        TweetyStatus st1 =  mockTweetyStatus("st1", "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+        TweetyStatus st2 =  mockTweetyStatus("st2", "johnhandle", "john", "https://john.com", new Date());
+        TweetyStatus st3 =  mockTweetyStatus("st3", "jackhandle", "jack", "https://jack.com", new Date());
+
+        List<TweetyStatus> responseList = new ArrayList<>();
+        responseList.add(st1);
+        responseList.add(st2);
+        responseList.add(st3);
+
+        when(tweetyService.pullUserTimeline()).thenReturn(responseList);
+
+        Response response = tweetyResource.pullUserTimeline();
+        List<TweetyStatus> statusesResult = (List<TweetyStatus>) response.getEntity();
+
+        assertEquals(OK_STATUS_CODE, response.getStatus());
+        assertEquals(responseList.size(), statusesResult.size());
+        for (int i = 0; i < responseList.size(); i++) {
+            TweetyStatus expected = responseList.get(i);
+            TweetyStatus actual = statusesResult.get(i);
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(expected.getUser().getHandle(), actual.getUser().getHandle());
+            assertEquals(expected.getUser().getName(), actual.getUser().getName());
+            assertEquals(expected.getUser().getProfileImageUrl(), actual.getUser().getProfileImageUrl());
+            assertEquals(expected.getCreatedAt(), actual.getCreatedAt());
+        }
+    }
+
+    @Test
+    public void testPullUserTimelineFailure() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
+        when(tweetyService.pullUserTimeline()).thenThrow(new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG));
+
+        Response response = tweetyResource.pullUserTimeline();
         assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }
