@@ -47,7 +47,7 @@ Pull User Timeline:
   curl http://localhost:8080/api/1.0/twitter/userTimeline
 
 Filter Tweet:
-	curl http://localhost:8080/api/1.0/homeTimeline/filter?keyword=<keyword>
+	curl http://localhost:8080/api/1.0/timeline/filter?keyword=<keyword>
   
 Coverage:
    run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
