@@ -7,6 +7,8 @@ import com.jeff.models.TweetyStatus;
 import com.jeff.models.TweetyUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import twitter4j.Status;
+import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
@@ -27,7 +29,7 @@ public class TweetyService {
     private static final String PULL_HOME_TIMELINE_KEY = "HOME_TIMELINE";
     private static final String PULL_USER_TIMELINE_KEY = "USER_TIMELINE";
     private static final String FILTER_TWEETS_KEY = "FILTERED_TIMELINE";
-    private static final String PUBLISH_TWEET_ERROR_MSG = "Message \"{}\" was not published successfully.";
+    private static final String STATUS_UPDATE_ERROR_MSG = "Status \"{}\" was not updated successfully.";
     private static final Logger logger = LoggerFactory.getLogger(TweetyService.class);
 
     @Inject
@@ -38,39 +40,34 @@ public class TweetyService {
 
     public TweetyStatus publishTweet(String message) throws TweetyException {
         logger.debug("Message to be published: \"{}\"", message);
-        if (cache.contains(message)) {
-            throw (TweetyException) cache.get(message);
+
+        StatusUpdate statusUpdate = new StatusUpdate(message);
+        TweetyStatus tweetyStatus = updateStatus(statusUpdate);
+
+        logger.info("Message \"{}\" published successfully", message);
+        return tweetyStatus;
+    }
+
+    public TweetyStatus replyTweet(String message, long inReplyToId) throws TweetyException {
+        logger.debug("Message to be published in response to tweet id: \"{}\" : \"{}\" ", inReplyToId, message);
+
+        Status status;
+        try {
+            status = twitter.showStatus(inReplyToId);
+        } catch (TwitterException e) {
+            logger.error("Response \"{}\" was not published successfully", message, e.getMessage(), e);
+            if (e.getErrorMessage().equals("No status found with that ID.")) {
+                throw new TweetyException(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG);
+            }
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
         }
 
-        if (!validateLength(message)) {
-            logger.error(PUBLISH_TWEET_ERROR_MSG, message);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
-            cache.put(message, exception);
-            throw exception;
-        } else if (message.isEmpty()) {
-            logger.error(PUBLISH_TWEET_ERROR_MSG, message);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
-            cache.put(message, exception);
-            throw exception;
-        } else {
-            try {
-                return Stream.of(twitter.updateStatus(message)).map(s -> {
-                    logger.info("Message \"{}\" published successfully", message);
-                    TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
-                            s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt());
-                    cache.remove(PULL_HOME_TIMELINE_KEY);
-                    cache.remove(PULL_USER_TIMELINE_KEY);
-                    cache.remove(FILTER_TWEETS_KEY);
-                    return ts;
-                }).findFirst().get();
-            } catch (TwitterException e) {
-                logger.error(PUBLISH_TWEET_ERROR_MSG, message, e.getMessage(), e);
-                if (e.getErrorMessage().equals("Status is a duplicate.")) {
-                    throw new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
-                }
-                throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
-            }
-        }
+        StatusUpdate statusUpdate = new StatusUpdate("@" + status.getUser().getScreenName() + " " + message);
+        statusUpdate.setInReplyToStatusId(inReplyToId);
+        TweetyStatus tweetyStatus = updateStatus(statusUpdate);
+
+        logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
+        return tweetyStatus;
     }
 
     public List<TweetyStatus> pullHomeTimeline() throws TweetyException {
@@ -142,7 +139,54 @@ public class TweetyService {
         }
     }
 
-    private boolean validateLength(String status) {
-        return status.length() <= TweetyConstantsRepository.MAX_TWEET_LENGTH;
+    private TweetyStatus updateStatus(StatusUpdate statusUpdate) throws TweetyException {
+        String message = statusUpdate.getStatus();
+
+        if (cache.contains(message)) {
+            throw (TweetyException) cache.get(message);
+        }
+
+        validateMaxLength(message);
+        validateNotEmpty(message);
+
+        try {
+            return Stream.of(twitter.updateStatus(statusUpdate)).map(s -> {
+                TweetyStatus ts = new TweetyStatus(String.valueOf(s.getId()), s.getText(), new TweetyUser(s.getUser().getScreenName(),
+                        s.getUser().getName(), s.getUser().getProfileImageURLHttps()), s.getCreatedAt());
+                clearCache();
+                return ts;
+            }).findFirst().get();
+        } catch (TwitterException e) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, message, e.getMessage(), e);
+            if (e.getErrorMessage().equals("Status is a duplicate.")) {
+                throw new TweetyException(TweetyConstantsRepository.DUPLICATE_STATUS_ERROR_MSG);
+            }
+            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+        }
+    }
+
+
+    private void clearCache() {
+        cache.remove(PULL_HOME_TIMELINE_KEY);
+        cache.remove(PULL_USER_TIMELINE_KEY);
+        cache.remove(FILTER_TWEETS_KEY);
+    }
+
+    private void validateNotEmpty(String message) throws TweetyException {
+        if (message.isEmpty()) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, message);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+            cache.put(message, exception);
+            throw exception;
+        }
+    }
+
+    private void validateMaxLength(String message) throws TweetyException {
+        if (message.length() > TweetyConstantsRepository.MAX_TWEET_LENGTH) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, message);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EXCEED_MAX_LENGTH_ERROR_MSG);
+            cache.put(message, exception);
+            throw exception;
+        }
     }
 }

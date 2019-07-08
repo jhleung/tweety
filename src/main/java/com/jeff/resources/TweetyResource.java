@@ -44,11 +44,30 @@ public class TweetyResource {
         try {
             TweetyStatus tweetyStatus = tweetyService.publishTweet(message);
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatus);
-            logger.info("Message \"{}\" published successfully", message);
         } catch (TweetyException e) {
             rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
         }
         logger.trace("Reached end of POST request to /api/1.0/twitter/tweet");
+        return rb.build();
+    }
+
+    @POST
+    @Produces({ MediaType.APPLICATION_JSON })
+    @Path("/twitter/reply")
+    public synchronized Response replyTweet(@FormParam("message") String message, @FormParam("inReplyToId") long inReplyToId) {
+        if (message == null)
+            return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_STATUS_ERROR_MSG).build();
+
+        logger.trace("/api/1.0/twitter/tweet endpoint hit with POST request. Attempting to publish message...");
+        Response.ResponseBuilder rb;
+
+        try {
+            TweetyStatus tweetyStatus = tweetyService.replyTweet(message, inReplyToId);
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.OK.getStatusCode(), tweetyStatus);
+        } catch (TweetyException e) {
+            rb = tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage());
+        }
+        logger.trace("Reached end of POST request to /api/1.0/twitter/reply");
         return rb.build();
     }
 

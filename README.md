@@ -36,18 +36,24 @@ Run the following:
   
 Publish Tweet:
   
-   curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet
-  
+   ```curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet```
+
+Reply to Tweet:
+
+   ```curl -d "message=<your_tweet>&inReplyToId=<parent_tweet_id>" http://localhost:8080/api/1.0/twitter/reply```
+
+
 Pull Home Timeline:
   
-   curl http://localhost:8080/api/1.0/twitter/homeTimeline
+   ```curl http://localhost:8080/api/1.0/twitter/homeTimeline```
 
 Pull User Timeline:
 
-  curl http://localhost:8080/api/1.0/twitter/userTimeline
+  ```curl http://localhost:8080/api/1.0/twitter/userTimeline```
 
 Filter Tweet:
-	curl http://localhost:8080/api/1.0/homeTimeline/filter?keyword=<keyword>
+
+	```curl http://localhost:8080/api/1.0/homeTimeline/filter?keyword=<keyword>```
   
 Coverage:
-   run mvn prepare-package from tweety/. Open up target/site/jacoco/index.html to see test coverage
+   ```run mvn prepare-package from tweety/```. Open up target/site/jacoco/index.html to see test coverage

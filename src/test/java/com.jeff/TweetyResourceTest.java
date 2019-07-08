@@ -235,6 +235,40 @@ public class TweetyResourceTest {
         assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, response.getEntity());
     }
 
+    @Test
+    public void testReplyTweetSuccess() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
+        String message = "value12";
+        long tweetId = 12L;
+        TweetyStatus st = mockTweetyStatus(message, "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
+
+        when(tweetyService.replyTweet(message, tweetId)).thenReturn(st);
+
+        Response response = tweetyResource.replyTweet(message, tweetId);
+        assertEquals(OK_STATUS_CODE, response.getStatus());
+
+        TweetyStatus tweetyStatus = (TweetyStatus) response.getEntity();
+        assertEquals(st.getMessage(), tweetyStatus.getMessage());
+        assertEquals(st.getUser().getHandle(), tweetyStatus.getUser().getHandle());
+        assertEquals(st.getUser().getName(), tweetyStatus.getUser().getName());
+        assertEquals(st.getUser().getProfileImageUrl(), tweetyStatus.getUser().getProfileImageUrl());
+        assertEquals(st.getCreatedAt(), tweetyStatus.getCreatedAt());
+    }
+
+    @Test
+    public void testReplyTweetStatusNotFound() throws TweetyException {
+        TweetyResource tweetyResource = new TweetyResource(tweetyService);
+        String message = "message";
+        long tweetId = 12L;
+        TwitterException twitterException = mock(TwitterException.class);
+        when(twitterException.getErrorMessage()).thenReturn("No status found with that ID.");
+        when(tweetyService.replyTweet(message, tweetId)).thenThrow(new TweetyException(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG));
+
+        Response response = tweetyResource.replyTweet(message, tweetId);
+        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
+        assertEquals(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG, response.getEntity());
+    }
+
     private TweetyStatus mockTweetyStatus(String message, String handle, String name, String profileImageUrl, Date createdAt) {
         TweetyStatus st =  mock(TweetyStatus.class);
         when(st.getMessage()).thenReturn(message);
