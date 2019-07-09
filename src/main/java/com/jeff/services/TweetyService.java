@@ -50,21 +50,12 @@ public class TweetyService {
             cache.put(message, exception);
             throw exception;
         }
+        StatusUpdate statusUpdate = new StatusUpdate(message);
 
-        try {
-            return Stream.of(message).map(m -> {
-                StatusUpdate statusUpdate = new StatusUpdate(message);
-                try {
-                    TweetyStatus s = updateStatus(statusUpdate);
-                    logger.info("Message \"{}\" published successfully", message);
-                    return s;
-                } catch (TweetyException e) {
-                    throw new RuntimeException(e);
-                }
-            }).findFirst().get();
-        } catch (RuntimeException e) {
-            throw (TweetyException) e.getCause();
-        }
+        return Stream.of(updateStatus(statusUpdate)).map(s -> {
+            logger.info("Message \"{}\" published successfully", message);
+            return s;
+        }).findFirst().get();
     }
 
     public TweetyStatus replyTweet(String message, String inReplyToId) throws TweetyException {
@@ -88,21 +79,13 @@ public class TweetyService {
             throw exception;
         }
 
-        try {
-            return Stream.of(message).map(m -> {
-                StatusUpdate statusUpdate = new StatusUpdate(message);
-                statusUpdate.setInReplyToStatusId(Long.parseLong(inReplyToId));
-                try {
-                    TweetyStatus s = updateStatus(statusUpdate);
-                    logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
-                    return s;
-                } catch (TweetyException e) {
-                    throw new RuntimeException(e);
-                }
-            }).findFirst().get();
-        } catch (RuntimeException e) {
-            throw (TweetyException) e.getCause();
-        }
+        StatusUpdate statusUpdate = new StatusUpdate(message);
+        statusUpdate.setInReplyToStatusId(Long.parseLong(inReplyToId));
+        
+        return Stream.of(updateStatus(statusUpdate)).map(s -> {
+            logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
+            return s;
+        }).findFirst().get();
     }
 
 
