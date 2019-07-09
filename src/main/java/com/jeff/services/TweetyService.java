@@ -7,7 +7,6 @@ import com.jeff.models.TweetyStatus;
 import com.jeff.models.TweetyUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import twitter4j.Status;
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -53,10 +52,10 @@ public class TweetyService {
         }
 
         StatusUpdate statusUpdate = new StatusUpdate(message);
-        TweetyStatus tweetyStatus = updateStatus(statusUpdate);
-
-        logger.info("Message \"{}\" published successfully", message);
-        return tweetyStatus;
+        return Stream.of(updateStatus(statusUpdate)).map(s -> {
+            logger.info("Message \"{}\" published successfully", message);
+            return s;
+        }).findFirst().get();
     }
 
     public TweetyStatus replyTweet(String message, String inReplyToId) throws TweetyException {
@@ -82,10 +81,10 @@ public class TweetyService {
 
         StatusUpdate statusUpdate = new StatusUpdate(message);
         statusUpdate.setInReplyToStatusId(Long.parseLong(inReplyToId));
-        TweetyStatus ts = updateStatus(statusUpdate);
-
-        logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
-        return ts;
+        return Stream.of(updateStatus(statusUpdate)).map(s -> {
+            logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
+            return s;
+        }).findFirst().get();
     }
 
 
