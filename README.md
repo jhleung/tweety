@@ -39,8 +39,6 @@ Publish Tweet:
    ```curl -d "message=<your_tweet>" http://localhost:8080/api/1.0/twitter/tweet```
 
 Reply to Tweet:
-	
-	tweet_id can be found by navigating to desired tweet and copy/pasting the number at the end of the URL. The tweet id from ```https://twitter.com/afraidofbandai1/status/1148620943583043585)``` would be 1148620943583043585.	
 
    ```curl -d "message=<your_tweet>&inReplyToId=<parent_tweet_id>" http://localhost:8080/api/1.0/twitter/reply```
 
@@ -55,7 +53,7 @@ Pull User Timeline:
 
 Filter Tweet:
 
-	```curl http://localhost:8080/api/1.0/homeTimeline/filter?keyword=<keyword>```
+  ```curl http://localhost:8080/api/1.0/homeTimeline/filter?keyword=<keyword>```
   
 Coverage:
    ```run mvn prepare-package from tweety/```. Open up target/site/jacoco/index.html to see test coverage

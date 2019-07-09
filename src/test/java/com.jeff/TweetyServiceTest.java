@@ -192,7 +192,7 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testUpdateStatusSuccess() throws TwitterException {
+    public void testPublishTweetSuccess() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
         StatusUpdate statusUpdate = new StatusUpdate(message);
@@ -223,7 +223,7 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testUpdateStatusExceedMaxLength() throws TwitterException {
+    public void testStatusExceedMaxLength() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         StringBuilder sb = new StringBuilder("");
         IntStream.range(0, TweetyConstantsRepository.MAX_TWEET_LENGTH + 1).forEach(i -> sb.append("x"));
@@ -245,7 +245,7 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testUpdateStatusEmptyMessage() throws TwitterException {
+    public void testPublishTweetEmptyMessage() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "";
         StatusUpdate statusUpdate = new StatusUpdate(message);
@@ -299,7 +299,7 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testShowStatusSuccess() throws TwitterException {
+    public void testReplyTweetSuccess() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
         String tweetId = "1313234987";
@@ -314,9 +314,7 @@ public class TweetyServiceTest {
         when(st.getUser()).thenReturn(u);
         when(st.getCreatedAt()).thenReturn(new Date());
 
-        when(twitter.showStatus(Long.parseLong(tweetId))).thenReturn(st);
-
-        StatusUpdate statusUpdate = new StatusUpdate("@" + st.getUser().getScreenName() + " " + message);
+        StatusUpdate statusUpdate = new StatusUpdate(message);
         statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
         when(twitter.updateStatus(statusUpdate)).thenReturn(st);
 
@@ -335,39 +333,39 @@ public class TweetyServiceTest {
     }
 
     @Test
-    public void testShowStatusTweetNotFound() throws TwitterException {
+    public void testReplyTweetEmptyMessage() throws TwitterException {
 
         TweetyService tweetyService = new TweetyService(twitter);
-        String message = "value12";
+        String message = "";
         String tweetId = "1313234987";
 
         TwitterException twitterException = mock(TwitterException.class);
-        when(twitterException.getErrorMessage()).thenReturn("No status found with that ID.");
-        when(twitter.showStatus(Long.parseLong(tweetId))).thenThrow(twitterException);
+        StatusUpdate statusUpdate = new StatusUpdate(message);
+        when(twitter.updateStatus(statusUpdate)).thenThrow(twitterException);
 
         try {
             tweetyService.replyTweet(message, tweetId);
         } catch (TweetyException e) {
-            assertEquals(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG, e.getMessage());
+            assertEquals(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG, e.getMessage());
         }
         reset(twitter);
     }
 
     @Test
-    public void testShowStatusGenericException() throws TwitterException {
+    public void testReplyTweetEmptyTweetId() throws TwitterException {
 
         TweetyService tweetyService = new TweetyService(twitter);
-        String message = "value12";
-        String tweetId = "1313234987";
+        String message = "asdfasdf";
+        String tweetId = "";
 
         TwitterException twitterException = mock(TwitterException.class);
-        when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
-        when(twitter.showStatus(Long.parseLong(tweetId))).thenThrow(twitterException);
+        StatusUpdate statusUpdate = new StatusUpdate(message);
+        when(twitter.updateStatus(statusUpdate)).thenThrow(twitterException);
 
         try {
             tweetyService.replyTweet(message, tweetId);
         } catch (TweetyException e) {
-            assertEquals(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG, e.getMessage());
+            assertEquals(TweetyConstantsRepository.EMPTY_TWEET_ID_ERROR_MSG, e.getMessage());
         }
         reset(twitter);
     }

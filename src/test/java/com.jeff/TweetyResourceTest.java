@@ -255,20 +255,6 @@ public class TweetyResourceTest {
         assertEquals(st.getCreatedAt(), tweetyStatus.getCreatedAt());
     }
 
-    @Test
-    public void testReplyTweetStatusNotFound() throws TweetyException {
-        TweetyResource tweetyResource = new TweetyResource(tweetyService);
-        String message = "message";
-        String tweetId = "12";
-        TwitterException twitterException = mock(TwitterException.class);
-        when(twitterException.getErrorMessage()).thenReturn("No status found with that ID.");
-        when(tweetyService.replyTweet(message, tweetId)).thenThrow(new TweetyException(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG));
-
-        Response response = tweetyResource.replyTweet(message, tweetId);
-        assertEquals(INTERNAL_SERVER_ERROR_STATUS_CODE, response.getStatus());
-        assertEquals(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG, response.getEntity());
-    }
-
     private TweetyStatus mockTweetyStatus(String message, String handle, String name, String profileImageUrl, Date createdAt) {
         TweetyStatus st =  mock(TweetyStatus.class);
         when(st.getMessage()).thenReturn(message);

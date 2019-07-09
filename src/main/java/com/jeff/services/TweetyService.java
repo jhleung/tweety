@@ -43,8 +43,14 @@ public class TweetyService {
         if (cache.contains(message)) {
             throw (TweetyException) cache.get(message);
         }
+
         validateMaxLength(message);
-        validateMessageNotEmpty(message);
+        if (message.isEmpty()) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, message);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+            cache.put(message, exception);
+            throw exception;
+        }
 
         StatusUpdate statusUpdate = new StatusUpdate(message);
         TweetyStatus tweetyStatus = updateStatus(statusUpdate);
@@ -55,32 +61,31 @@ public class TweetyService {
 
     public TweetyStatus replyTweet(String message, String inReplyToId) throws TweetyException {
         logger.debug("Message to be published in response to tweet id: \"{}\" : \"{}\" ", inReplyToId, message);
-        if (cache.contains(message)) {
-            throw (TweetyException) cache.get(message);
-        } else if (cache.contains(inReplyToId)) {
-            throw (TweetyException) cache.get(inReplyToId);
+        if (cache.contains(message + " " + inReplyToId)) {
+            throw (TweetyException) cache.get(message + " " + inReplyToId);
         }
 
         validateMaxLength(message);
-        validateMessageNotEmpty(message);
-        validateTweetIdNotEmpty(inReplyToId);
-
-        try {
-            StatusUpdate statusUpdate = Stream.of(twitter.showStatus(Long.parseLong(inReplyToId))).map(s-> {
-                StatusUpdate su = new StatusUpdate("@" + s.getUser().getScreenName() + " " + message);
-                su.setInReplyToStatusId(Long.parseLong(inReplyToId));
-                return su;
-            }).findFirst().get();
-            TweetyStatus ts = updateStatus(statusUpdate);
-            logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
-            return ts;
-        } catch (TwitterException e) {
-            logger.error("Response \"{}\" was not published successfully", message, e.getMessage(), e);
-            if (e.getErrorMessage().equals("No status found with that ID.")) {
-                throw new TweetyException(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG);
-            }
-            throw new TweetyException(TweetyConstantsRepository.INTERNAL_SERVER_ERROR_MSG);
+        if (message.isEmpty()) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, message);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
+            cache.put(message + " " + inReplyToId, exception);
+            throw exception;
         }
+
+        if (inReplyToId.isEmpty()) {
+            logger.error(STATUS_UPDATE_ERROR_MSG, inReplyToId);
+            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_TWEET_ID_ERROR_MSG);
+            cache.put(message + " " + inReplyToId, exception);
+            throw exception;
+        }
+
+        StatusUpdate statusUpdate = new StatusUpdate(message);
+        statusUpdate.setInReplyToStatusId(Long.parseLong(inReplyToId));
+        TweetyStatus ts = updateStatus(statusUpdate);
+
+        logger.info("Message \"{}\" published successfully in response to tweet id: \"{}\"", message, inReplyToId);
+        return ts;
     }
 
 
@@ -171,29 +176,10 @@ public class TweetyService {
         }
     }
 
-
     private void clearCache() {
         cache.remove(PULL_HOME_TIMELINE_KEY);
         cache.remove(PULL_USER_TIMELINE_KEY);
         cache.remove(FILTER_TWEETS_KEY);
-    }
-
-    private void validateTweetIdNotEmpty(String id) throws TweetyException {
-        if (id.isEmpty()) {
-            logger.error(STATUS_UPDATE_ERROR_MSG, id);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_TWEET_ID_ERROR_MSG);
-            cache.put(id, exception);
-            throw exception;
-        }
-    }
-
-    private void validateMessageNotEmpty(String message) throws TweetyException {
-        if (message.isEmpty()) {
-            logger.error(STATUS_UPDATE_ERROR_MSG, message);
-            TweetyException exception = new TweetyException(TweetyConstantsRepository.EMPTY_STATUS_ERROR_MSG);
-            cache.put(message, exception);
-            throw exception;
-        }
     }
 
     private void validateMaxLength(String message) throws TweetyException {
