@@ -5,7 +5,9 @@ public class TweetyConstantsRepository {
     public static final String INTERNAL_SERVER_ERROR_MSG = "Internal Server Error. Please contact System Administrator.";
     public static final String DUPLICATE_STATUS_ERROR_MSG = "Status was already posted. Please try again.";
     public static final String EMPTY_STATUS_ERROR_MSG = "Please enter a non-empty status.";
+    public static final String EMPTY_TWEET_ID_ERROR_MSG = "Please enter a non-empty tweet id.";
     public static final String NULL_STATUS_ERROR_MSG = "message parameter missing";
+    public static final String NULL_TWEET_ID_ERROR_MSG = "inReplyToId parameter missing";
     public static final String EMPTY_KEYWORD_ERROR_MSG = "Please enter a non-empty keyword.";
     public static final String NULL_KEYWORD_ERROR_MSG = "keyword parameter missing";
 
