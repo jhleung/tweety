@@ -239,7 +239,7 @@ public class TweetyResourceTest {
     public void testReplyTweetSuccess() throws TweetyException {
         TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "value12";
-        long tweetId = 12L;
+        String tweetId = "12";
         TweetyStatus st = mockTweetyStatus(message, "jimmyhandle", "jimmy", "https://jimmy.com", new Date());
 
         when(tweetyService.replyTweet(message, tweetId)).thenReturn(st);
@@ -259,7 +259,7 @@ public class TweetyResourceTest {
     public void testReplyTweetStatusNotFound() throws TweetyException {
         TweetyResource tweetyResource = new TweetyResource(tweetyService);
         String message = "message";
-        long tweetId = 12L;
+        String tweetId = "12";
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("No status found with that ID.");
         when(tweetyService.replyTweet(message, tweetId)).thenThrow(new TweetyException(TweetyConstantsRepository.STATUS_NOT_FOUND_ERROR_MSG));

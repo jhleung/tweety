@@ -302,7 +302,7 @@ public class TweetyServiceTest {
     public void testShowStatusSuccess() throws TwitterException {
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
-        long tweetId = 1313234987;
+        String tweetId = "1313234987";
 
         Status st = mock(Status.class);
         User u = mock(User.class);
@@ -314,10 +314,10 @@ public class TweetyServiceTest {
         when(st.getUser()).thenReturn(u);
         when(st.getCreatedAt()).thenReturn(new Date());
 
-        when(twitter.showStatus(tweetId)).thenReturn(st);
+        when(twitter.showStatus(Long.parseLong(tweetId))).thenReturn(st);
 
         StatusUpdate statusUpdate = new StatusUpdate("@" + st.getUser().getScreenName() + " " + message);
-        statusUpdate.setInReplyToStatusId(tweetId);
+        statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
         when(twitter.updateStatus(statusUpdate)).thenReturn(st);
 
         try {
@@ -339,11 +339,11 @@ public class TweetyServiceTest {
 
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
-        long tweetId = 1313234987;
+        String tweetId = "1313234987";
 
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("No status found with that ID.");
-        when(twitter.showStatus(tweetId)).thenThrow(twitterException);
+        when(twitter.showStatus(Long.parseLong(tweetId))).thenThrow(twitterException);
 
         try {
             tweetyService.replyTweet(message, tweetId);
@@ -358,11 +358,11 @@ public class TweetyServiceTest {
 
         TweetyService tweetyService = new TweetyService(twitter);
         String message = "value12";
-        long tweetId = 1313234987;
+        String tweetId = "1313234987";
 
         TwitterException twitterException = mock(TwitterException.class);
         when(twitterException.getErrorMessage()).thenReturn("Unauthorized");
-        when(twitter.showStatus(tweetId)).thenThrow(twitterException);
+        when(twitter.showStatus(Long.parseLong(tweetId))).thenThrow(twitterException);
 
         try {
             tweetyService.replyTweet(message, tweetId);
