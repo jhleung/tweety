@@ -34,7 +34,7 @@ public class TweetyResource {
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/tweet")
-    public synchronized Response publishTweet(@FormParam("message") String message) {
+    public Response publishTweet(@FormParam("message") String message) {
         if (message == null)
             return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_STATUS_ERROR_MSG).build();
 
@@ -54,7 +54,7 @@ public class TweetyResource {
     @POST
     @Produces({ MediaType.APPLICATION_JSON })
     @Path("/twitter/reply")
-    public synchronized Response replyTweet(@FormParam("message") String message, @FormParam("inReplyToId") String inReplyToId) {
+    public Response replyTweet(@FormParam("message") String message, @FormParam("inReplyToId") String inReplyToId) {
         if (message == null)
             return tweetyResponseBuilder.buildTweetyResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), TweetyConstantsRepository.NULL_STATUS_ERROR_MSG).build();
         if (inReplyToId == null)
